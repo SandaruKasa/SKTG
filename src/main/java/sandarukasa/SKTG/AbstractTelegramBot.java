@@ -1,6 +1,9 @@
 package sandarukasa.SKTG;
 
 import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.api.methods.GetFile;
+import org.telegram.telegrambots.api.methods.send.SendAudio;
+import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.MessageEntity;
 import org.telegram.telegrambots.api.objects.Update;
@@ -19,6 +22,11 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
     private final String TOKEN;
     private final BotSession botSession;
     protected final HashMap<String, Method> commandHandlers;
+
+    @Override
+    public void onUpdatesReceived(List<Update> updates) {
+        updates.forEach(UpdateProcessor::new);
+    }
 
     public AbstractTelegramBot(TelegramBotsApi telegramBotsApi, ResourceBundle tokens) throws TelegramApiException {
         super();
@@ -98,5 +106,43 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
                 }
             }
         }
+    }
+
+    protected class UpdateProcessor extends Thread {
+        protected final Update update;
+
+        public UpdateProcessor(Update update) {
+            this.update = update;
+            this.start();
+        }
+
+        @Override
+        public void run() {
+            AbstractTelegramBot.this.onUpdateReceived(update);
+        }
+    }
+
+    protected java.io.File downloadFileById(String fileId) throws TelegramApiException {
+        return downloadFile(execute(new GetFile().setFileId(fileId)));
+    }
+
+    protected Message replyWithAMessage(Message replyToMessage, SendMessage sendMessage) throws TelegramApiException {
+        Message result;
+        try {
+            result = sendApiMethod(sendMessage.setChatId(replyToMessage.getChatId()).setReplyToMessageId(replyToMessage.getMessageId()));
+        } catch (TelegramApiException e) {
+            result = sendApiMethod(sendMessage.setReplyToMessageId(null));
+        }
+        return result;
+    }
+
+    protected Message replyWithAnAudio(Message replyToMessage, SendAudio sendAudio) throws TelegramApiException {
+        Message result;
+        try {
+            result = sendAudio(sendAudio.setChatId(replyToMessage.getChatId()).setReplyToMessageId(replyToMessage.getMessageId()));
+        } catch (TelegramApiException e) {
+            result = sendAudio(sendAudio.setReplyToMessageId(null));
+        }
+        return result;
     }
 }
