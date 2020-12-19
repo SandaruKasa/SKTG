@@ -2,18 +2,21 @@ apply plugin: 'application'
 
 group 'sandarukasa'
 
+//for application::run
 mainClassName = 'sandarukasa.SKTG.Main'
 
 repositories {
     mavenCentral()
     maven {
-        url "https://dl.bintray.com/kodehawa/maven" // for the imageboard API lib
+        // for net.kodehawa:imageboard-api
+        url "https://dl.bintray.com/kodehawa/maven"
     }
 }
 
 dependencies {
-    implementation 'org.telegram:telegrambots:3.5'
+    implementation 'org.telegram:telegrambots:5.0.1'
+    implementation 'org.slf4j:slf4j-jdk14:1.7.30'
     implementation 'com.vk.api:sdk:0.5.12'
-    implementation 'net.kodehawa:imageboard-api:2.3.1'
+    implementation 'net.kodehawa:imageboard-api:2.4.1'
     implementation 'net.bramp.ffmpeg:ffmpeg:0.6.2'
 }

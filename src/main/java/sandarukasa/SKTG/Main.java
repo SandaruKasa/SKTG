@@ -3,9 +3,9 @@ package sandarukasa.SKTG;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import sandarukasa.SKTG.bots.BetaLupi;
 
-import java.io.IOException;
 import java.util.ResourceBundle;
 
 public class Main {
@@ -15,8 +15,7 @@ public class Main {
         return TOKENS.getString(key);
     }
 
-    public static void main(String[] args) throws TelegramApiException, IOException {
-        org.telegram.telegrambots.ApiContextInitializer.init();
+    public static void main(String[] args) throws TelegramApiException {
         VkApiClient vkApiClient = new VkApiClient(HttpTransportClient.getInstance());
         UserActor userActor = new UserActor(Integer.parseInt(getToken("vk_actor_id")), getToken("vk_token"));
 //        GetResponse b = null;
