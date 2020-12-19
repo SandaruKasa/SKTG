@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from PIL import Image, ImageFont, ImageDraw
 
 from SKTools import altdiv
@@ -18,9 +19,9 @@ def del_column(pixels: list, column_no: int) -> None:
 
 
 def crop_bg(image: Image, color='black', crop_top: bool = True, crop_bottom: bool = True,
-            crop_left: bool = True, crop_right: bool = True) -> Image:
+            crop_left: bool = True, crop_right: bool = True, mode: str = 'RGB') -> Image:
     p = get_pixels(image)
-    reserve = Image.new('RGB', (1, 1), color)
+    reserve = Image.new(mode, (1, 1), color)
     color = reserve.load()[0, 0]
 
     if crop_top:
@@ -50,35 +51,37 @@ def crop_bg(image: Image, color='black', crop_top: bool = True, crop_bottom: boo
     res = []
     for row in p:
         res += row
-    im = Image.new('RGB', (len(p[0]), len(p)))
+    im = Image.new(mode, (len(p[0]), len(p)))
     im.putdata(res)
     return im
 
 
-def extended_by(image_to_expand: Image, top=0, left=0, right=0, bottom=0, bg_color='black') -> Image:
+def extended_by(image_to_expand: Image, top: int = 0, left: int = 0, right: int = 0, bottom: int = 0,
+                bg_color='black', mode: str = 'RGB') -> Image:
     w0, h0 = image_to_expand.size
-    expanded_image = Image.new('RGB', (w0 + left + right, h0 + top + bottom), bg_color)
+    expanded_image = Image.new(mode, (w0 + left + right, h0 + top + bottom), bg_color)
     expanded_image.paste(image_to_expand, (left, top))
     return expanded_image
 
 
-def extended_to(image_to_expand: Image, w: int = 640, h: int = 640, bg_color='black') -> Image:
+def extended_to(image_to_expand: Image, w: int = 640, h: int = 640, bg_color='black', mode: str = 'RGB') -> Image:
     w0, h0 = image_to_expand.size
-    expanded_image = Image.new('RGB', (w, h), bg_color)
+    expanded_image = Image.new(mode, (w, h), bg_color)
     expanded_image.paste(image_to_expand, (altdiv(w - w0, 2), altdiv(h - h0, 2)))
     return expanded_image
 
 
-def vertical_merge(*images, bg_color='black', align='center', interval: int = 0) -> Image:
+def vertical_merge(*images: Image, bg_color='black', align: str = 'center', interval: int = 0,
+                   mode: str = 'RGB') -> Image:
     if (number_of_images := len(images)) == 0:
-        return Image.new('RGB', (1, 1), bg_color)
+        return Image.new(mode, (1, 1), bg_color)
     elif number_of_images == 1:
         return images[0]
     elif number_of_images == 2:
         size = [images[i].size for i in range(2)]
         w_final = max(size[0][0], size[1][0])
         h_final = size[0][1] + size[1][1] + interval
-        merged_image = Image.new("RGB", (w_final, h_final), color=bg_color)
+        merged_image = Image.new(mode, (w_final, h_final), color=bg_color)
         if align == 'left':
             w = (0, 0)
         elif align == 'right':
@@ -89,19 +92,22 @@ def vertical_merge(*images, bg_color='black', align='center', interval: int = 0)
         merged_image.paste(images[1], (w[1], size[0][1] + interval))
         return merged_image
     else:
-        return vertical_merge(vertical_merge(*images[:2]), *images[2:])
+        return vertical_merge(vertical_merge(*images[:2],
+                                             bg_color=bg_color, align=align, interval=interval, mode=mode),
+                              *images[2:], bg_color=bg_color, align=align, interval=interval, mode=mode)
 
 
-def horizontal_merge(*images, bg_color='black', align='center', interval: int = 0) -> Image:
+def horizontal_merge(*images: Image, bg_color='black', align: str = 'center', interval: int = 0,
+                     mode: str = 'RGB') -> Image:
     if (number_of_images := len(images)) == 0:
-        return Image.new('RGB', (1, 1), bg_color)
+        return Image.new(mode, (1, 1), bg_color)
     elif number_of_images == 1:
         return images[0]
     elif number_of_images == 2:
         size = [images[i].size for i in range(2)]
         w_final = size[0][0] + size[1][0] + interval
         h_final = max(size[0][1], size[1][1])
-        merged_image = Image.new("RGB", (w_final, h_final), color=bg_color)
+        merged_image = Image.new(mode, (w_final, h_final), color=bg_color)
         if align in ('top', 'up'):
             h = (0, 0)
         elif align in ('bottom', 'down'):
@@ -112,23 +118,26 @@ def horizontal_merge(*images, bg_color='black', align='center', interval: int = 
         merged_image.paste(images[1], (size[0][0] + interval, h[1]))
         return merged_image
     else:
-        return horizontal_merge(vertical_merge(*images[:2]), *images[2:])
+        return horizontal_merge(horizontal_merge(*images[:2],
+                                                 bg_color=bg_color, align=align, interval=interval, mode=mode),
+                                *images[2:], bg_color=bg_color, align=align, interval=interval, mode=mode)
 
 
-def draw_line_no_wrap(text: str, font: ImageFont.FreeTypeFont, bg_color='black', text_color=(255, 255, 255)) -> Image:
+def draw_line_no_wrap(text: str, font: ImageFont.FreeTypeFont, bg_color='black', text_color=(255, 255, 255),
+                      mode: str = 'RGB') -> Image:
     if not text:
         text = ' '
-    text_img = Image.new('RGB', font.getsize(text), bg_color)
+    text_img = Image.new(mode, font.getsize(text), bg_color)
     text_draw = ImageDraw.Draw(text_img)
     text_draw.text((0, 0), text, text_color, font=font)
     return text_img
 
 
 def draw_line_with_wrap(text: str, font: ImageFont.FreeTypeFont, max_width: int = -1, bg_color='black',
-                        text_color=(255, 255, 255), align='center',
-                        allow_word_breaking=True, carry_over_symbol='-') -> Image:
+                        text_color=(255, 255, 255), align: str = 'center',
+                        allow_word_breaking: bool = True, carry_over_symbol: str = '-', mode: str = 'RGB') -> Image:
     if max_width <= 0:
-        return draw_line_no_wrap(text, font, bg_color, text_color)
+        return draw_line_no_wrap(text, font, bg_color, text_color, mode=mode)
 
     def fits(test_line: str) -> bool:
         return font.getsize(test_line)[0] <= max_width
@@ -176,11 +185,15 @@ def draw_line_with_wrap(text: str, font: ImageFont.FreeTypeFont, max_width: int 
                     lines.append(current_line)
                 current_line = word
     lines.append(current_line)
-    return vertical_merge(*map(lambda line: draw_line_no_wrap(line, font, bg_color, text_color), lines), align=align)
+    return vertical_merge(*map(lambda line: draw_line_no_wrap(line, font, bg_color, text_color, mode=mode), lines),
+                          align=align, mode=mode)
 
 
 def draw_text_with_wrap(text: str, font: ImageFont.FreeTypeFont, max_width: int = -1, bg_color='black',
-                        text_color=(255, 255, 255), align='center', allow_word_breaking=True) -> Image:
-    return vertical_merge(*(draw_line_with_wrap(line, font, max_width, bg_color, text_color, align, allow_word_breaking)
-                            for line in text.splitlines(keepends=True)), align=align) \
-        if max_width > 0 else draw_line_no_wrap(text, font, bg_color, text_color)
+                        text_color=(255, 255, 255), align: str = 'center', allow_word_breaking: bool = True,
+                        mode: str = 'RGB') -> Image:
+    return vertical_merge(
+        *(draw_line_with_wrap(line, font, max_width, bg_color, text_color, align, allow_word_breaking,
+                              mode=mode) for line in text.splitlines(keepends=True)),
+        align=align, mode=mode) \
+        if max_width > 0 else draw_line_no_wrap(text, font, bg_color, text_color, mode=mode)
