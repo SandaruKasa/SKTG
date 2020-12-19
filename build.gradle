@@ -7,7 +7,7 @@ mainClassName = 'sandarukasa.SKTG.Main'
 repositories {
     mavenCentral()
     maven {
-        url "https://dl.bintray.com/kodehawa/maven"
+        url "https://dl.bintray.com/kodehawa/maven" // for the imageboard API lib
     }
 }
 

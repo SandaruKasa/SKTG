@@ -3,8 +3,6 @@ package sandarukasa.SKTG;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
-import net.bramp.ffmpeg.FFmpegExecutor;
-import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 import java.io.IOException;
@@ -27,9 +25,6 @@ public class Main {
 //        } catch (ApiException | ClientException e) {
 //            e.printStackTrace();
 //        }
-//        final TestBot testBot = new TestBot(new TelegramBotsApi(), TOKENS);
-
-        new FFmpegExecutor().createJob(new FFmpegBuilder().addInput("1.ogg").addOutput("1.mp3").setFormat("mp3").done()).run();
-
+        new BetaLupi(TOKENS);
     }
 }
