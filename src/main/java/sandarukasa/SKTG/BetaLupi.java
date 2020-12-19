@@ -47,7 +47,7 @@ public class BetaLupi extends AbstractTelegramBot {
             }
         }
         if (voice == null) {
-            replyWithAMessage(message, new SendMessage().setText("No audio"));
+            replyWithAMessage(message, new SendMessage().setText(getString("no_audio", message.getFrom().getLanguageCode())));
         } else {
             final String oggAbsPath = downloadFileById(voice.getFileId()).getAbsolutePath();
             final String mp3AbsPath = String.format("%s.mp3", oggAbsPath);

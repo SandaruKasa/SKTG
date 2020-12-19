@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
@@ -22,11 +23,6 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
     private final String TOKEN;
     private final BotSession botSession;
     protected final HashMap<String, Method> commandHandlers;
-
-    @Override
-    public void onUpdatesReceived(List<Update> updates) {
-        updates.forEach(UpdateProcessor::new);
-    }
 
     public AbstractTelegramBot(TelegramBotsApi telegramBotsApi, ResourceBundle tokens) throws TelegramApiException {
         super();
@@ -50,7 +46,9 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
     }
 
     protected String getString(String key, String languageCode) {
-        return "";
+        return languageCode != null ?
+                ResourceBundle.getBundle(getLocalID(), Locale.forLanguageTag(languageCode)).getString(key) :
+                ResourceBundle.getBundle(getLocalID()).getString(key);
     }
 
     @Override
@@ -121,6 +119,13 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
             AbstractTelegramBot.this.onUpdateReceived(update);
         }
     }
+
+
+    @Override
+    public void onUpdatesReceived(List<Update> updates) {
+        updates.forEach(UpdateProcessor::new);
+    }
+
 
     protected java.io.File downloadFileById(String fileId) throws TelegramApiException {
         return downloadFile(execute(new GetFile().setFileId(fileId)));
