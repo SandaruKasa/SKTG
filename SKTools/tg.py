@@ -1,5 +1,6 @@
+from requests import get, post
+
 from SKTools.links import telegram_bot_api
-from SKTools.proxies import proxy_request
 
 
 def reply_dict(message):
@@ -26,14 +27,14 @@ class Bot:
         kwargs = {'params': params}
         if file:
             kwargs['files'] = {file_type: file}
-        res = proxy_request(self.api_link + method, get_and_not_post=False, **kwargs).json()
+        res = post(self.api_link + method, **kwargs).json()
         if res.get('description') == 'Bad Request: reply message not found':
             kwargs['params'].pop('reply_to_message_id', None)
-            res = proxy_request(self.api_link + method, get_and_not_post=False, **kwargs).json()
+            res = post(self.api_link + method, **kwargs).json()
         return res
 
     def get_updates(self, offset=0):
-        return proxy_request(self.api_link + 'getUpdates', params={'offset': offset}).json()['result']
+        return get(self.api_link + 'getUpdates', params={'offset': offset}).json()['result']
 
     def download_file(self, file_id, file_name=None, file_name_salt=None):
         if file_name is None:
@@ -45,7 +46,7 @@ class Bot:
         file_path = self.method('getFile', file_id=file_id)['result']['file_path']
         file_name = f'{file_name}_{file_name_salt}.{file_path.split(".")[-1]}'
         with open(file_name, 'wb') as o:
-            o.write(proxy_request(f'https://api.telegram.org/file/bot{self.token}/{file_path}').content)
+            o.write(get(f'https://api.telegram.org/file/bot{self.token}/{file_path}').content)
         return file_name
 
     def download_photo(self, file_info, file_name=None, file_name_salt=None,

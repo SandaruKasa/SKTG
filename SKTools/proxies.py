@@ -683,7 +683,7 @@ def get_proxy(threads=100, timeout=30):
                 def timeout_wrapper():
                     nonlocal check_res
                     try:
-                        check_res = int(get('https://t.me', proxies={'https': proxy}).status_code)
+                        check_res = int(get('https://gelbooru.com', proxies={'https': proxy}).status_code)
                     except Exception as e:
                         check_res = e
 
