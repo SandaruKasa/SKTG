@@ -12,41 +12,65 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
+import org.telegram.telegrambots.meta.api.objects.polls.Poll;
+import org.telegram.telegrambots.meta.api.objects.polls.PollAnswer;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import sandarukasa.SKTG.bots.handler_annotations.CommandHandler;
 import sandarukasa.SKTG.bots.handler_annotations.TextTriggerHandler;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
-public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
-    protected final Map<String, Method> commandHandlers;
-    protected final List<Method> textTriggerHandlers;
-    protected final Instant startTime = Instant.now();
-    private final String USERNAME;
+public abstract class AbstractTelegramBot extends TelegramLongPollingBot implements AutoCloseable {
+    protected final Map<String, Method> commandHandlers = new LinkedHashMap<>();
+    protected final List<Method> textTriggerHandlers = new LinkedList<>();
+    public final Instant startTime = Instant.now();
+    public final String USERNAME;
     private final String TOKEN;
-    private final BotSession botSession;
+    protected final BotSession botSession;
+    protected final Path workingDirectory = Path.of(getLocalID());
+    protected final Path downloadsDirectory = Path.of(getLocalID(), "downloads");
 
     public AbstractTelegramBot(TelegramBotsApi telegramBotsApi, ResourceBundle tokens) throws TelegramApiException {
         super();
+        assertIsDirectory(workingDirectory);
+        assertIsDirectory(downloadsDirectory);
         TOKEN = tokens.getString(getLocalID());
         USERNAME = getMe().getUserName();
         botSession = telegramBotsApi.registerBot(this);
-        commandHandlers = new LinkedHashMap<>();
-        textTriggerHandlers = new LinkedList<>();
-        setupHandlers(this.getClass().getSuperclass(), this.getClass());
+        setupHandlers(AbstractTelegramBot.class, this.getClass());
+    }
+
+    public static void deleteFiles(Path... files) throws IOException {
+        IOException lastException = null;
+        for (Path file : files) {
+            try {
+                Files.deleteIfExists(file);
+            } catch (IOException newException) {
+                if (lastException != null) {
+                    newException.addSuppressed(lastException);
+                }
+                lastException = newException;
+            }
+        }
+        if (lastException != null) {
+            throw lastException;
+        }
     }
 
     public AbstractTelegramBot(ResourceBundle tokens) throws TelegramApiException {
         this(new TelegramBotsApi(DefaultBotSession.class), tokens);
     }
 
-    protected static List<MessageEntity> getEntities(Message message) {
+    public static List<MessageEntity> getEntities(Message message) {
         List<MessageEntity> textEntities = message.getEntities();
         return (textEntities != null && !textEntities.isEmpty()) ? textEntities : message.getCaptionEntities();
     }
@@ -73,16 +97,22 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
         sendApiMethod(new SetMyCommands(myCommands));
     }
 
-    protected String getString(String key, String languageCode) {
+    private void assertIsDirectory(Path path) {
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectory(path);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else if (!Files.isDirectory(path)) {
+            throw new RuntimeException(path + " already exists and is not a directory");
+        }
+    }
+
+    public String getLocalized(String key, String languageCode) {
         return languageCode != null ?
                 ResourceBundle.getBundle(getLocalID(), Locale.forLanguageTag(languageCode)).getString(key) :
                 ResourceBundle.getBundle(getLocalID()).getString(key);
-    }
-
-    protected String getString(String key, User targetLanguageUser) {
-        return targetLanguageUser != null ?
-                getString(key, targetLanguageUser.getLanguageCode()) :
-                getString(key, (String) null);
     }
 
     @Override
@@ -119,53 +149,87 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
         return null;
     }
 
+    public static String htmlEscape(String s) {
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&qt;");
+    }
+
     @Override
-    public void onUpdateReceived(Update update) {
+    public final void onUpdatesReceived(List<Update> updates) {
+        updates.forEach(update -> new Thread(() -> this.onUpdateReceived(update)).start());
+    }
+
+    @Override
+    public final void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
-            final Message message = update.getMessage();
-            final String command = getCommand(message);
-            final String text = message.getText();
-            if (command != null) {
-                Method commandHandler = commandHandlers.get(command.toLowerCase());
-                if (commandHandler != null) {
+            onMessageReceived(update.getMessage());
+        } else if (update.hasEditedMessage()) {
+            onEditedMessageReceived(update.getEditedMessage());
+        } else if (update.hasCallbackQuery()) {
+            onCallbackQueryReceived(update.getCallbackQuery());
+        } else if (update.hasChannelPost()) {
+            onChannelPostReceived(update.getChannelPost());
+        } else if (update.hasEditedChannelPost()) {
+            onEditedChannelPostReceived(update.getChannelPost());
+        } else if (update.hasPoll()) {
+            onPollReceived(update.getPoll());
+        } else if (update.hasPollAnswer()) {
+            onPollAnswerReceived(update.getPollAnswer());
+        }
+    }
+
+    public final void invokeHandlers(Message message) {
+        final String command = getCommand(message);
+        final String text = message.getText();
+        if (command != null) {
+            Method commandHandler = commandHandlers.get(command.toLowerCase());
+            if (commandHandler != null) {
+                try {
+                    commandHandler.invoke(this, message);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
+        } else if (text != null) {
+            for (Method textTriggerHandler : textTriggerHandlers) {
+                if (text.matches(textTriggerHandler.getAnnotation(TextTriggerHandler.class).regex())) {
                     try {
-                        commandHandler.invoke(this, message);
+                        textTriggerHandler.invoke(this, message);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         e.printStackTrace();
                     }
                 }
-            } else if (text != null) {
-                for (Method textTriggerHandler : textTriggerHandlers) {
-                    if (text.matches(textTriggerHandler.getAnnotation(TextTriggerHandler.class).regex())) {
-                        try {
-                            textTriggerHandler.invoke(this, message);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
             }
-        } else if (update.hasCallbackQuery()) {
-            onCallbackQueryReceived(update.getCallbackQuery());
         }
     }
 
-    protected void onCallbackQueryReceived(CallbackQuery callbackQuery) {
+    public void onMessageReceived(Message message) {
+        invokeHandlers(message);
+    }
+
+    public void onCallbackQueryReceived(CallbackQuery callbackQuery) {
         try {
             sendApiMethod(new AnswerCallbackQuery(callbackQuery.getId()));
         } catch (TelegramApiException ignored) {
         }
     }
 
-    @Override
-    public void onUpdatesReceived(List<Update> updates) {
-        updates.forEach(update -> new Thread(() -> this.onUpdateReceived(update)).start());
+    public void onEditedMessageReceived(Message message) {
     }
 
-    @CommandHandler(commandName = "help", commandAliases = {"start"}, availableInTheList = true,
-            description = "Displays help message")
-    protected void help(Message message) throws TelegramApiException {
-        replyWithMessage(message, SendMessage.builder().text(getString("help", message.getFrom())).parseMode("html"));
+    public void onChannelPostReceived(Message message) {
+    }
+
+    public void onEditedChannelPostReceived(Message message) {
+    }
+
+    public void onPollReceived(Poll poll) {
+    }
+
+
+    public String getLocalized(String key, User targetUser) {
+        return targetUser != null ?
+                getLocalized(key, targetUser.getLanguageCode()) :
+                getLocalized(key, (String) null);
     }
 
     @CommandHandler(commandName = "github", commandAliases = {}, availableInTheList = false,
@@ -186,10 +250,6 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
         }, uptime.toHoursPart(), uptime.toMinutesPart(), uptime.toSecondsPart()));
     }
 
-    protected java.io.File downloadFileById(String fileId) throws TelegramApiException {
-        return downloadFile(execute(new GetFile(fileId)));
-    }
-
     protected void sendChatAction(Long chatId, ActionType actionType) {
         try {
             sendApiMethod(new SendChatAction(String.valueOf(chatId), actionType.toString()));
@@ -197,31 +257,41 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
         }
     }
 
-
-    protected Message replyWithLocalizedText(Message replyToMessage, String key) throws TelegramApiException {
-        return replyWithText(replyToMessage, getString(key, replyToMessage.getFrom().getLanguageCode()));
+    @CommandHandler(commandName = "help", commandAliases = {"start"}, availableInTheList = true,
+            description = "Displays help message")
+    protected void help(Message message) throws TelegramApiException {
+        replyWithMessage(message, SendMessage.builder().text(getLocalized("help", message.getFrom())).parseMode("html"));
     }
 
     protected Message replyWithText(Message replyToMessage, String text) throws TelegramApiException {
         return replyWithMessage(replyToMessage, SendMessage.builder().text(text));
     }
 
+    protected Message replyWithLocalizedText(Message replyToMessage, String key) throws TelegramApiException {
+        return replyWithText(replyToMessage, getLocalized(key, replyToMessage.getFrom()));
+    }
+
     protected Message replyWithMessage(Message replyToMessage, SendMessage.SendMessageBuilder sendMessageBuilder)
             throws TelegramApiException {
         Message result;
         try {
-            result = sendApiMethod(sendMessageBuilder.chatId(String.valueOf(replyToMessage.getChatId())).replyToMessageId(replyToMessage.getMessageId()).build());
+            result = sendApiMethod(sendMessageBuilder.chatId(replyToMessage.getChatId().toString()).replyToMessageId(replyToMessage.getMessageId()).build());
         } catch (TelegramApiException e) {
             result = sendApiMethod(sendMessageBuilder.replyToMessageId(null).build());
         }
         return result;
     }
 
+    public void onPollAnswerReceived(PollAnswer message) {
+    }
+
+
     protected Message replyWithAudio(Message replyToMessage, SendAudio.SendAudioBuilder sendAudioBuilder)
             throws TelegramApiException {
         Message result;
+        sendAudioBuilder.duration(-1); //todo wait for it to get fixed
         try {
-            result = execute(sendAudioBuilder.chatId(String.valueOf(replyToMessage.getChatId())).replyToMessageId(replyToMessage.getMessageId()).build());
+            result = execute(sendAudioBuilder.chatId(replyToMessage.getChatId().toString()).replyToMessageId(replyToMessage.getMessageId()).build());
         } catch (TelegramApiException e) {
             result = execute(sendAudioBuilder.replyToMessageId(null).build());
         }
@@ -232,10 +302,28 @@ public abstract class AbstractTelegramBot extends TelegramLongPollingBot {
             throws TelegramApiException {
         Message result;
         try {
-            result = execute(sendPhotoBuilder.chatId(String.valueOf(replyToMessage.getChatId())).replyToMessageId(replyToMessage.getMessageId()).build());
+            result = execute(sendPhotoBuilder.chatId(replyToMessage.getChatId().toString()).replyToMessageId(replyToMessage.getMessageId()).build());
         } catch (TelegramApiException e) {
             result = execute(sendPhotoBuilder.replyToMessageId(null).build());
         }
         return result;
+    }
+
+    protected Path getFile(String fileId) throws TelegramApiException {
+        final Path result = Path.of(downloadsDirectory.toString(), fileId);
+        if (!Files.exists(result)) {
+            downloadFile(sendApiMethod(GetFile.builder().fileId(fileId).build()), result.toFile());
+        }
+        return result;
+    }
+
+    @Override
+    public void close() {
+        try {
+            if (botSession.isRunning())
+                botSession.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

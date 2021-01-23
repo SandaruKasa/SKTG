@@ -5,26 +5,15 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
-import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import org.telegram.telegrambots.meta.api.objects.Voice;
+import org.telegram.telegrambots.meta.api.objects.*;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import sandarukasa.SKTG.bots.betalupi.InspirobotMe;
 import sandarukasa.SKTG.bots.handler_annotations.CommandHandler;
 import sandarukasa.SKTG.bots.handler_annotations.TextTriggerHandler;
-import sandarukasa.SKTG.misc.InspirobotMe;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -47,22 +36,6 @@ public class BetaLupi extends AbstractTelegramBot {
         super(tokens);
     }
 
-    public static File getCompressedPhoto(File uncompressed, float compressionQuality) throws IOException {
-        // https://stackoverflow.com/a/44566972
-        File compressed = new File(String.format("%s.jpg", uncompressed.getAbsolutePath()));
-        OutputStream outputStream = new FileOutputStream(compressed);
-        ImageWriter imageWriter = ImageIO.getImageWritersByFormatName("jpg").next();
-        ImageOutputStream imageOutputStream = ImageIO.createImageOutputStream(outputStream);
-        imageWriter.setOutput(imageOutputStream);
-        ImageWriteParam param = imageWriter.getDefaultWriteParam();
-        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-        param.setCompressionQuality(compressionQuality);
-        imageWriter.write(null, new IIOImage(ImageIO.read(uncompressed), null, null), param);
-        outputStream.close();
-        imageOutputStream.close();
-        imageWriter.dispose();
-        return compressed;
-    }
 
     @Override
     protected String getLocalID() {
@@ -75,9 +48,10 @@ public class BetaLupi extends AbstractTelegramBot {
         replyWithLocalizedText(message, "shrug");
     }
 
+
     @CommandHandler(commandName = "jpeg", commandAliases = {"jpg", "compress"}, availableInTheList = true,
             description = "Compresses a photo")
-    protected final void jpeg(Message message) throws IOException, TelegramApiException {
+    protected final void jpeg(Message message) throws TelegramApiException {
         List<PhotoSize> photo = message.getPhoto();
         if (photo == null) {
             final Message replied = message.getReplyToMessage();
@@ -86,25 +60,12 @@ public class BetaLupi extends AbstractTelegramBot {
             }
         }
         if (photo == null) {
-            replyWithMessage(message, SendMessage.builder().text(getString("no_photo", message.getFrom())));
+            replyWithLocalizedText(message, "no_photo");
         } else {
-            float compressionQuality;
-            try {
-                compressionQuality = switch (Integer.parseInt(message.getText().split("(?U)\\s+")[1])) {
-                    case 1 -> 0.2f;
-                    default -> 0.1f;
-                    case 3 -> 0.05f;
-                    case 4 -> 0f;
-                };
-            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
-                compressionQuality = 0.1f;
-            }
-            // todo buttons
-            replyWithPhoto(message, SendPhoto.builder().photo(
-                    new InputFile(getCompressedPhoto(downloadFileById(photo.get(photo.size() - 1).getFileId())
-                            , compressionQuality))));
+            //todo
         }
     }
+
 
     @CommandHandler(commandName = "inspire", commandAliases = {}, availableInTheList = true,
             description = "Sends an AI-generated inspirational picture")
@@ -117,8 +78,7 @@ public class BetaLupi extends AbstractTelegramBot {
 
     @CommandHandler(commandName = "mp3", commandAliases = {}, availableInTheList = true,
             description = "Converts a voice message to mp3")
-    protected final void oggToMp3(Message message) throws TelegramApiException {
-        sendChatAction(message.getChatId(), ActionType.UPLOADAUDIO);
+    protected final void oggToMp3(Message message) throws TelegramApiException, IOException {
         Voice voice = message.getVoice();
         if (voice == null) {
             final Message replied = message.getReplyToMessage();
@@ -129,15 +89,27 @@ public class BetaLupi extends AbstractTelegramBot {
         if (voice == null) {
             replyWithLocalizedText(message, "no_audio");
         } else {
-            final String oggAbsPath = downloadFileById(voice.getFileId()).getAbsolutePath();
-            final String mp3AbsPath = String.format("%s.mp3", oggAbsPath);
-            fFmpegExecutor.createJob(new FFmpegBuilder().addInput(oggAbsPath).addOutput(mp3AbsPath).setFormat("mp3").done()).run();
-            replyWithAudio(message, SendAudio.builder().audio(new InputFile(new File(oggAbsPath))));
+            sendChatAction(message.getChatId(), ActionType.UPLOADAUDIO);
+            final Path ogg = getFile(voice.getFileId());
+            final Path mp3 = Path.of(ogg + ".mp3");
+            synchronized (fFmpegExecutor) {
+                fFmpegExecutor.createJob(new FFmpegBuilder().addInput(ogg.toString()).addOutput(mp3.toString())
+                        .setFormat("mp3").done()).run();
+            }
+            replyWithAudio(message, SendAudio.builder().audio(new InputFile(mp3.toFile())));
+            deleteFiles(ogg, mp3);
         }
     }
 
     @TextTriggerHandler(regex = "(?Ui).*слава укра(їні|ине).*")
     protected final void gloryToHeroes(Message message) throws TelegramApiException {
         replyWithText(message, "Героям Слава!");
+    }
+
+
+    @Override
+    public void onCallbackQueryReceived(CallbackQuery callbackQuery) {
+        // todo
+        super.onCallbackQueryReceived(callbackQuery);
     }
 }

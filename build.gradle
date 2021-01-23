@@ -2,8 +2,22 @@ apply plugin: 'application'
 
 group 'sandarukasa'
 
-//for application::run
-mainClassName = 'sandarukasa.SKTG.Main'
+// For records
+sourceCompatibility = 15
+tasks.withType(JavaCompile) {
+    options.compilerArgs += '--enable-preview'
+}
+tasks.withType(JavaExec) {
+    jvmArgs += "--enable-preview"
+}
+
+tasks {
+    run {
+        mainClassName = 'sandarukasa.SKTG.Main'
+        workingDir = 'run'
+        mkdir(workingDir)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -19,4 +33,5 @@ dependencies {
     implementation 'com.vk.api:sdk:0.5.12'
     implementation 'net.kodehawa:imageboard-api:2.4.1'
     implementation 'net.bramp.ffmpeg:ffmpeg:0.6.2'
+    implementation 'org.xerial:sqlite-jdbc:3.34.0'
 }

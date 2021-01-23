@@ -1,4 +1,4 @@
-package sandarukasa.SKTG.misc;
+package sandarukasa.SKTG.bots.betalupi;
 
 
 import java.io.IOException;

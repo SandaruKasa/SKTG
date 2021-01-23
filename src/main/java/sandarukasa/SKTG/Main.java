@@ -1,29 +1,36 @@
 package sandarukasa.SKTG;
 
-import com.vk.api.sdk.client.VkApiClient;
-import com.vk.api.sdk.client.actors.UserActor;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import sandarukasa.SKTG.bots.BetaLupi;
+import sandarukasa.SKTG.bots.AbstractTelegramBot;
+import sandarukasa.SKTG.bots.ImperialDrone;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class Main {
     private static final ResourceBundle TOKENS = ResourceBundle.getBundle("tokens");
 
-    private static String getToken(String key) {
-        return TOKENS.getString(key);
-    }
-
     public static void main(String[] args) throws TelegramApiException {
-        VkApiClient vkApiClient = new VkApiClient(HttpTransportClient.getInstance());
-        UserActor userActor = new UserActor(Integer.parseInt(getToken("vk_actor_id")), getToken("vk_token"));
-//        GetResponse b = null;
-//        try {
-//            b = vkApiClient.wall().get(userActor).ownerId(1).count(1).execute();
-//        } catch (ApiException | ClientException e) {
-//            e.printStackTrace();
-//        }
-        new BetaLupi(TOKENS);
+        //todo logging
+//        final List<AbstractTelegramBot> bots = List.of(new BetaLupi(TOKENS), new ImperialDrone(TOKENS));
+        final List<AbstractTelegramBot> bots = List.of(new ImperialDrone(TOKENS));
+        System.out.println("Started");
+        try {
+            while (true) {
+                try {
+                    if (Files.deleteIfExists(Path.of("stop"))) {
+                        break;
+                    }
+                } catch (IOException ignored) {
+                }
+                Thread.sleep(1000);
+            }
+        } catch (InterruptedException ignored) {
+        }
+        System.out.println("Stopping");
+        bots.forEach(AbstractTelegramBot::close);
     }
 }
