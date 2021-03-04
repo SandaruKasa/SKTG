@@ -187,7 +187,6 @@ class ChatCache(CachedDictWithIDPopping):
 
 class Bot:
     def __init__(self, token: str,
-                 minimal_number_of_messages_to_consider_a_chat_not_worth_logging_to_telegram: int = 7,
                  user_cache_name: Optional[str] = 'user_cache.json',
                  chat_cache_name: Optional[str] = 'chat_cache.json',
                  use_subdirectory_for_caches: bool = True, subdirectory_name: Optional[str] = None):
@@ -195,7 +194,6 @@ class Bot:
         self.api_link = telegram_bot_api.format(self.token)
         self.me = self.method('getMe')
         self.username = self.me['username']
-        self.mnomtacnwltt = minimal_number_of_messages_to_consider_a_chat_not_worth_logging_to_telegram
         if use_subdirectory_for_caches and (subdirectory_name is None):
             subdirectory_name = f'bot_{self.me["id"]}_cache'
         self.user_cache = None if user_cache_name is None else \
@@ -271,8 +269,7 @@ class Bot:
             raise Exception(res['result'])
 
     @safeguard(1, True)
-    def get_and_process_updates(self, offset: int = 0, queue: Optional[Queue] = None, logger: Optional[Logger] = None,
-                                chats_not_to_log_to_telegram: Optional[Container[int]] = None) -> RetriesLog:
+    def get_and_process_updates(self, offset: int = 0, queue: Optional[Queue] = None, logger: Optional[Logger] = None) -> RetriesLog:
         if logger is None:
             logger = Logger()
         updates = self.get_updates(offset)
@@ -282,10 +279,7 @@ class Bot:
             if queue is not None:
                 queue.put(upd)
             chat_id = get_chat_id(upd)
-            logger.log(upd, file_name=str(chat_id),
-                       send=(chat_id not in chats_not_to_log_to_telegram) if chats_not_to_log_to_telegram is not None
-                       else (self.chat_cache is None or
-                             self.chat_cache.get_number_of_messages(chat_id) < self.mnomtacnwltt))
+            logger.log(upd, send=False)
         return offset, updates
 
     def download_file(self, file_id: str, file_name: Optional[str] = None,

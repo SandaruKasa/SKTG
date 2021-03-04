@@ -193,7 +193,7 @@ def process_message(msg: dict) -> None:
                 bot.method('sendSticker', sticker=easter_egg_sticker_id, **reply)
                 chat_name = html_chat_name(bot.chat_cache[chat_id_user_id['chat_id']])
                 user_name = html_user_mention_with_nice_username(bot.user_cache[chat_id_user_id['user_id']])
-                logger.log(f'Easter edd for {user_name} in <i>{chat_name}</i>', tg_params={'parse_mode': 'HTML'})
+                logger.log(f'Easter egg for {user_name} in <i>{chat_name}</i>', tg_params={'parse_mode': 'HTML'})
             elif command in random_commands:
                 if not post_random_from_vk(**reply):
                     bot.sendMessage(lang.vk_blacklist(), **reply, parse_mode='HTML')
