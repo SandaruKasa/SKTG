@@ -299,7 +299,7 @@ class Bot:
     def extract_and_download_voice(self, message: dict, file_name: Optional[str] = None,
                                    file_name_salt: Optional[str] = None) -> Optional[str]:
         return None if (voice := extract_media(message, 'voice')) is None \
-            else self.download_file(voice['id'], file_name=file_name, file_name_salt=file_name_salt)
+            else self.download_file(voice['file_id'], file_name=file_name, file_name_salt=file_name_salt)
 
     def download_photo(self, file_info: dict, file_name: Optional[str] = None, file_name_salt: Optional[str] = None,
                        resolution_picker=lambda x: max(x, key=lambda r: r['width'] * r['height'])) -> str:
