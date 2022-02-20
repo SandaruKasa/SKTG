@@ -2,7 +2,7 @@ from sktg import *
 
 create_bot(
     "junior",
-    # todo: features
+    features.shrooms,
 )
 
 for updater in updaters:
