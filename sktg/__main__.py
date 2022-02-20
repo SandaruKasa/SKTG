@@ -5,10 +5,11 @@ create_bot(
     # todo: features
 )
 
-for bot in bots:
-    bot.start_polling()
+for updater in updaters:
+    updater.start_polling()
+    config.set_startup_time(updater.bot.id)
 
-if bots:
-    bots[0].idle()
-    for bot in bots[1:]:
-        bot.stop()
+if updaters:
+    updaters[0].idle()  # todo: custom idler with logging
+    for updater in updaters[1:]:
+        updater.stop()
