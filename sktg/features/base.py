@@ -7,25 +7,21 @@ from .logger import logger
 base = Blueprint("base", logger)
 
 
-@base.command("source", "opensource", "github")
-def github_link(update: telegram.Update, context: telegram.ext.CallbackContext):
-    update.message.reply_text(
-        "https://github.com/SandaruKasa/SKTG/tree/dev",
-        disable_web_page_preview=True,
-        quote=True,
-    )
+@base.command("source", "opensource", "github", output='t', disable_web_page_preview=True)
+def github_link():
+    return "https://github.com/SandaruKasa/SKTG/tree/dev"
 
 
-@base.command("shrug")
-def shrug(update: telegram.Update, context: telegram.ext.CallbackContext):
-    update.message.reply_text(r"¯\_(ツ)_/¯")
+@base.command("shrug", output='t')
+def shrug():
+    return r"¯\_(ツ)_/¯"
 
 
-@base.command("uptime")
-def uptime(update: telegram.Update, context: telegram.ext.CallbackContext):
-    text: str
+@base.command("uptime", output='t')
+def uptime(_message: telegram.Message, context: telegram.ext.CallbackContext):
+    result: str
     try:
-        text = str(sktg.config.get_uptime(context.bot.id))  # todo: pretty format
+        result = str(sktg.config.get_uptime(context.bot.id))  # todo: pretty format
     except KeyError:
-        text = "Startup time wasn't set up for this bot"  # todo: log an error or somethign
-    update.message.reply_text(text=text)
+        result = "Startup time wasn't set up for this bot"  # todo: log an error or something
+    return result

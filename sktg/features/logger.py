@@ -2,7 +2,6 @@ import datetime
 import json
 import logging
 import pathlib
-from typing import Union
 
 import telegram.ext
 
@@ -20,7 +19,14 @@ logging.basicConfig(
 )
 
 
-def log_update(update: Union[telegram.Update, str], context: telegram.ext.CallbackContext) -> None:
+def format_update(update: telegram.Update | str) -> str:
+    if isinstance(update, telegram.Update):
+        return json.dumps(update.to_dict(), indent=4, ensure_ascii=False)
+    else:
+        return str(update)
+
+
+def log_update(update: telegram.Update | str, context: telegram.ext.CallbackContext):
     if isinstance(update, telegram.Update):
         update = json.dumps(update.to_dict(), indent=4, ensure_ascii=False)
     logging.getLogger(f"{context.bot.username}: UPDATE").info("\n%s", update)

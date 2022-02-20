@@ -1,11 +1,9 @@
-from __future__ import annotations
-
-from typing import Callable, TypeVar
+import inspect
+from typing import TypeVar
 
 import telegram.ext
 
-R = TypeVar('R')
-_Callback = Callable[[telegram.Update, telegram.ext.CallbackContext], R]
+F = TypeVar('F')
 
 
 class Blueprint:
@@ -39,19 +37,60 @@ class Blueprint:
             group = self.name
         self._groups.setdefault(group, []).append(handler)
 
-    # todo: pass filter as an explicit argument
-    # todo: pass message into callback and accept returned text/sticker/etc
-    def command(self, name: str, *aliases: str, description: str | None = None, group: str = "commands", **kwargs):
-        def decorator(callback: _Callback) -> _Callback:
+    # todo: return type of the function
+    def command(
+            self,
+            name: str,
+            *aliases: str,
+            filters: telegram.ext.BaseFilter | None = None,
+            output: str | None = None,
+            description: str | None = None,
+            group: str = "commands",
+            **reply_kwargs,
+    ):
+        def decorator(function: F) -> F:
+
+            arity = len(inspect.signature(function).parameters)
+            assert arity <= 2, f"{function} provided as a callback for command {name} of Blueprint {self.name} " \
+                               f"takes {arity} arguments while 0 to 2 are expected"
+
+            match output:
+                case None:
+                    reply_function = None
+                case "text" | "t":
+                    reply_function = telegram.Message.reply_text
+                case "sticker" | "s":
+                    reply_function = telegram.Message.reply_sticker
+                case _:
+                    raise ValueError(
+                        f"{function} provided as a callback for command {name} of Blueprint {self.name} "
+                        f"wants to have {output} as output, which is not a recognized option"
+                    )
+
+            def callback(update: telegram.Update, context: telegram.ext.CallbackContext):
+                message = update.effective_message
+                args = []
+                if arity >= 1:
+                    args.append(message)
+                if arity >= 2:
+                    args.append(context)
+                result = function(*args)
+                if reply_function is not None:
+                    reply_function(
+                        message,
+                        result,
+                        **{"quote": True, **reply_kwargs}
+                    )
+
             self.add_handler(
                 handler=telegram.ext.CommandHandler(
                     command=[name, *aliases],
                     callback=callback,
-                    **kwargs
+                    filters=filters,
                 ),
-                group=group
+                group=group,
             )
-            return callback
+            return function
 
         if description is not None:
             self._commands.append((name, description))
