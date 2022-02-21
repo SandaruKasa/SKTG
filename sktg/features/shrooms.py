@@ -1,11 +1,22 @@
-import telegram
+import telegram.ext
 
 from sktg.config import config_dir
 from sktg.utils import *
 
 blueprint = Blueprint("shrooms")
 
-shroom_filter = StickerWhitelistFilter(config_dir / "shrooms.json")
+
+class StickerEmojiWhitelist(telegram.ext.MessageFilter):
+    def __init__(self, *emojis: str):
+        self.emojis = emojis
+
+    def filter(self, message: telegram.Message) -> bool | None:
+        if message.sticker:
+            return message.sticker.emoji in self.emojis
+
+
+shroom_emoji_filter = StickerEmojiWhitelist('🍄')
+shroom_whitelist = StickerWhitelistFilter(config_dir / "shrooms.json")
 shroom_admins = UserWhitelistFilter(config_dir / "shroom_admins.txt")
 
 shroom_girl_id: str | None = None
@@ -21,7 +32,7 @@ def send_shroom_girl(_message: telegram.Message, context: telegram.ext.CallbackC
 
 blueprint.add_handler(
     telegram.ext.MessageHandler(
-        filters=shroom_filter,
+        filters=shroom_whitelist | shroom_emoji_filter,
         callback=wrap_command_callback(send_shroom_girl),
     )
 )
@@ -38,7 +49,7 @@ def replied_sticker(message: telegram.Message) -> telegram.Sticker | None:
 @blueprint.command("add_shroom", filters=shroom_admins)
 def add_shroom(message: telegram.Message, context: telegram.ext.CallbackContext):
     if sticker := replied_sticker(message):
-        if shroom_filter.add_stickers(sticker.file_unique_id):
+        if shroom_whitelist.add_stickers(sticker.file_unique_id)[0]:
             return send_shroom_girl(message, context)
         else:
             return message.reply_text("Already added")
@@ -54,7 +65,7 @@ def add_shrooms(message: telegram.Message, context: telegram.ext.CallbackContext
             shrooms = tuple(file.file_unique_id for file in shroom_set.stickers)
         else:
             shrooms = [sticker.file_unique_id]
-        result = shroom_filter.add_stickers(*shrooms)
+        result = shroom_whitelist.add_stickers(*shrooms)
         return send_shroom_girl(message, context).reply_text(f"{result.count(True)} new shrooms added")
     else:
         return message.reply_text("Reply to a shroom sticker set, lol")
@@ -64,7 +75,7 @@ def add_shrooms(message: telegram.Message, context: telegram.ext.CallbackContext
 def add_shroomset(message: telegram.Message, context: telegram.ext.CallbackContext):
     if sticker := replied_sticker(message):
         if sticker.set_name:
-            if shroom_filter.add_set(sticker.set_name):
+            if shroom_whitelist.add_set(sticker.set_name):
                 return send_shroom_girl(message, context)
             else:
                 return message.reply_text("Already added")
