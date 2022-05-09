@@ -1,3 +1,7 @@
+"""Posting a Shroomjak girl in reply to mushrom stickers
+https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
+"""
+
 import telegram.ext
 
 from sktg.config import config_dir

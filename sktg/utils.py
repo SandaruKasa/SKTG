@@ -9,7 +9,10 @@ import telegram.ext
 
 F = TypeVar('F')
 R = TypeVar('R')
-CommandCallback = typing.Callable[[telegram.Message, telegram.ext.CallbackContext], R]
+CommandCallback = typing.Callable[
+    [telegram.Message, telegram.ext.CallbackContext],
+    R
+]
 Callback = typing.Callable[[telegram.Update, telegram.ext.CallbackContext], R]
 
 
@@ -24,34 +27,39 @@ class Blueprint:
     def __init__(self, name: str, *blueprints: 'Blueprint'):
         self.name: str = name
         self._groups: dict[str, list[telegram.ext.Handler]] = {}
-        self._blueprints: list['Blueprint'] = list(blueprints)
+        self._children: list['Blueprint'] = list(blueprints)
         self._commands: list[tuple[str, str]] = []
 
-    def add_blueprints(self, *blueprints: 'Blueprint'):
-        self._blueprints.extend(blueprints)
+    def add_child_blueprints(self, *blueprints: 'Blueprint'):
+        self._children.extend(blueprints)
 
     def apply(self, dispatcher: telegram.ext.Dispatcher):
         group_ids: dict[str, int] = {}
-        self._apply(dispatcher, group_ids)
+        applied_blueprints: set[str] = set()
+        self._apply(dispatcher, group_ids, applied_blueprints)
         if self._commands:
             # todo: l10n
             # todo: scopes
             dispatcher.bot.set_my_commands(self._commands)
 
-    def _apply(self, dispatcher: telegram.ext.Dispatcher, group_ids: dict[str, int]):
+    def _apply(self, dispatcher: telegram.ext.Dispatcher, group_ids: dict[str, int], applied_blueprints: set[str]):
+        for child in self._children:
+            child._apply(dispatcher, group_ids, applied_blueprints)
+        if self.name in applied_blueprints:
+            raise Exception(
+                f"Error applying blueprint {self.name}: circular dependencies")
+        applied_blueprints.add(self.name)
         for group_name, handlers in self._groups.items():
             group_id: int = group_ids.setdefault(group_name, len(group_ids))
             for handler in handlers:
                 dispatcher.add_handler(handler, group_id)
-        for blueprint in self._blueprints:
-            blueprint._apply(dispatcher, group_ids)
 
     def add_handler(self, handler: telegram.ext.Handler, group: str | None = None):
         if group is None:
             group = self.name
         self._groups.setdefault(group, []).append(handler)
 
-    # todo: comment this convoluted hellscape
+    # todo: rewrite and comment this convoluted hellscape
     def command(
             self,
             name: str,

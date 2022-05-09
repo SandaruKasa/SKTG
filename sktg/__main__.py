@@ -1,3 +1,6 @@
+"""A file that starts the bots.
+Created to allow running the bots with ``python3 -m sktg``.
+"""
 from sktg import *
 
 create_bot(
