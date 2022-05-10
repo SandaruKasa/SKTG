@@ -35,7 +35,7 @@ def set_startup_time(bot_id: int):
     _startup_time[bot_id] = datetime.datetime.now()
 
 
-def get_uptime(bot_id: int) -> datetime.timedelta:
+def get_uptime(bot_id: int) -> datetime.timedelta | None:
     """Get the uptime of a bot
 
     ``set_startup_time`` must have been called for the given ``bot_id`` prior to this call.
@@ -44,6 +44,11 @@ def get_uptime(bot_id: int) -> datetime.timedelta:
         bot_id (int): Telegram's user id fot the bot
 
     Returns:
-        datetime.timedelta: datetime.timedelta representing the uptime of the bot with the given id
+        datetime.timedelta | None: timedelta representing the uptime of the bot with the given id
+                                   (or None if ``set_startup_time``) wasn't called
     """
-    return datetime.datetime.now() - _startup_time[bot_id]
+    startup_time = _startup_time.get(bot_id)
+    if startup_time is not None:
+        return datetime.datetime.now() - startup_time
+    else:
+        return None

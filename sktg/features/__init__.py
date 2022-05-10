@@ -4,5 +4,4 @@ Blueprints are stored in their own subpackages for development convenience, but 
 
 from .base import base
 from .inspirobot import inspirobot
-from .logger import logger
 from .shrooms import blueprint as shrooms
