@@ -8,12 +8,9 @@ from typing import TypeVar
 import telegram.ext
 import telegram
 
-F = TypeVar('F')
-R = TypeVar('R')
-CommandCallback = typing.Callable[
-    [telegram.Message, telegram.ext.CallbackContext],
-    R
-]
+F = TypeVar("F")
+R = TypeVar("R")
+CommandCallback = typing.Callable[[telegram.Message, telegram.ext.CallbackContext], R]
 Callback = typing.Callable[[telegram.Update, telegram.ext.CallbackContext], R]
 
 
@@ -25,20 +22,20 @@ def wrap_command_callback(command_callback: CommandCallback) -> Callback:
 
 
 class Blueprint:
-    def __init__(self, name: str, *blueprints: 'Blueprint'):
+    def __init__(self, name: str, *blueprints: "Blueprint"):
         self.name: str = name
         self._groups: dict[str, list[telegram.ext.Handler]] = {}
-        self._children: list['Blueprint'] = list(blueprints)
+        self._children: list["Blueprint"] = list(blueprints)
         self._commands: list[tuple[str, str]] = []
 
-    def add_child_blueprints(self, *blueprints: 'Blueprint'):
+    def add_child_blueprints(self, *blueprints: "Blueprint"):
         self._children.extend(blueprints)
 
     def apply(self, dispatcher: telegram.ext.Dispatcher):
         group_ids: dict[str, int] = {}
         applied_blueprints: set[str] = set()
         self._apply(dispatcher, group_ids, applied_blueprints)
-        if (commands := list(self._all_comands())):
+        if commands := list(self._all_comands()):
             dispatcher.bot.set_my_commands(commands)
 
     def _all_comands(self):
@@ -47,12 +44,18 @@ class Blueprint:
         for command in self._commands:
             yield command
 
-    def _apply(self, dispatcher: telegram.ext.Dispatcher, group_ids: dict[str, int], applied_blueprints: set[str]):
+    def _apply(
+        self,
+        dispatcher: telegram.ext.Dispatcher,
+        group_ids: dict[str, int],
+        applied_blueprints: set[str],
+    ):
         for child in self._children:
             child._apply(dispatcher, group_ids, applied_blueprints)
         if self.name in applied_blueprints:
             raise Exception(
-                f"Error applying blueprint {self.name}: circular dependencies")
+                f"Error applying blueprint {self.name}: circular dependencies"
+            )
         applied_blueprints.add(self.name)
         for group_name, handlers in self._groups.items():
             group_id: int = group_ids.setdefault(group_name, len(group_ids))
@@ -66,20 +69,22 @@ class Blueprint:
 
     # todo: rewrite and comment this convoluted hellscape
     def command(
-            self,
-            name: str,
-            *aliases: str,
-            filters: telegram.ext.BaseFilter | None = None,
-            output: str | None = None,
-            description: str | None = None,
-            group: str = "commands",
-            **reply_kwargs,
+        self,
+        name: str,
+        *aliases: str,
+        filters: telegram.ext.BaseFilter | None = None,
+        output: str | None = None,
+        description: str | None = None,
+        group: str = "commands",
+        **reply_kwargs,
     ):
         def decorator(function: F) -> F:
 
             arity = len(inspect.signature(function).parameters)
-            assert arity <= 2, f"{function} provided as a callback for command {name} of Blueprint {self.name} " \
-                               f"takes {arity} arguments while 0 to 2 are expected"
+            assert arity <= 2, (
+                f"{function} provided as a callback for command {name} of Blueprint {self.name} "
+                f"takes {arity} arguments while 0 to 2 are expected"
+            )
 
             # todo: chat actions
             match output:
@@ -97,7 +102,9 @@ class Blueprint:
                         f"wants to have {output} as output, which is not a recognized option"
                     )
 
-            def wrapper(message: telegram.Message, context: telegram.ext.CallbackContext):
+            def wrapper(
+                message: telegram.Message, context: telegram.ext.CallbackContext
+            ):
                 args = []
                 if arity >= 1:
                     args.append(message)
@@ -108,9 +115,7 @@ class Blueprint:
                     return content
                 else:
                     return reply_function(
-                        message,
-                        content,
-                        **{"quote": True, **reply_kwargs}
+                        message, content, **{"quote": True, **reply_kwargs}
                     )
 
             self.add_handler(
@@ -132,7 +137,7 @@ class Blueprint:
 
 
 class WhitelistFilter(telegram.ext.MessageFilter):
-    WL = typing.TypeVar('WL')
+    WL = typing.TypeVar("WL")
 
     def __init__(self, underlying_file: pathlib.Path, whitelist_default: WL):
         self._file = underlying_file.resolve()
@@ -152,7 +157,7 @@ class WhitelistFilter(telegram.ext.MessageFilter):
         ...
 
     def _flush(self):
-        with open(self._file, 'w') as f:
+        with open(self._file, "w") as f:
             f.write(self.serialize(self._whitelist))
 
 
@@ -164,7 +169,7 @@ class UserWhitelistFilter(WhitelistFilter):
         return message.from_user.id in self._whitelist
 
     def serialize(self, whitelist: set[int]) -> str:
-        return '\n'.join(map(str, whitelist))
+        return "\n".join(map(str, whitelist))
 
     def deserialize(self, s: str) -> set[int]:
         return set(map(int, s.strip().splitlines()))
@@ -206,7 +211,10 @@ class StickerWhitelistFilter(WhitelistFilter):
 
     def filter(self, message: telegram.Message) -> bool | None:
         if sticker := message.sticker:
-            return sticker.file_unique_id in self._stickers or sticker.set_name in self._sets
+            return (
+                sticker.file_unique_id in self._stickers
+                or sticker.set_name in self._sets
+            )
 
     def add_stickers(self, *file_unique_ids: str) -> list[bool]:
         result = []

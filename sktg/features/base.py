@@ -40,24 +40,28 @@ class LoggingHandler(telegram.ext.Handler):
     def check_update(self, update: object) -> bool:
         return True
 
+
 base = Blueprint("base")
 base.add_handler(LoggingHandler())
 
-@base.command("source", "opensource", "github", output='t', disable_web_page_preview=True)
+
+@base.command(
+    "source", "opensource", "github", output="t", disable_web_page_preview=True
+)
 def github_link():
     return "https://github.com/SandaruKasa/SKTG/tree/dev"
 
 
-@base.command("shrug", output='t')
+@base.command("shrug", output="t")
 def shrug():
     return r"¯\_(ツ)_/¯"
 
 
-@base.command("uptime", output='t')
+@base.command("uptime", output="t")
 def uptime(_message: telegram.Message, context: telegram.ext.CallbackContext):
     uptime = sktg.config.get_uptime(context.bot.id)
     if uptime is None:
         return "Unkown"
     else:
         # stripping microseconds
-        return str(uptime).split('.')[0]
+        return str(uptime).split(".")[0]

@@ -1,14 +1,15 @@
-import requests
 import datetime
 
+import requests
 import telegram
-
 from sktg.utils import Blueprint
 
 inspirobot = Blueprint("inspirobot")
 
 
-@inspirobot.command("inspire", "inspirobot", description="AI-generated inspirational quote")
+@inspirobot.command(
+    "inspire", "inspirobot", description="AI-generated inspirational quote"
+)
 def inspire(message: telegram.Message):
     message.chat.send_chat_action(telegram.ChatAction.UPLOAD_PHOTO)
 

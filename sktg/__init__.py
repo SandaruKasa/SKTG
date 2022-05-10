@@ -18,7 +18,7 @@ logging.basicConfig(
     ],
     level=os.getenv("LOGLEVEL", "INFO").upper(),
     format="[%(asctime)s] [%(name)s] [%(levelname)s]: %(message)s",
-    datefmt=datetime_fmt
+    datefmt=datetime_fmt,
 )
 
 
@@ -30,9 +30,9 @@ updaters: list[telegram.ext.Updater] = []
 
 
 def create_bot(
-        name: str,
-        *blueprints: utils.Blueprint,
-        add_base_features: bool = True,
+    name: str,
+    *blueprints: utils.Blueprint,
+    add_base_features: bool = True,
 ) -> telegram.ext.Updater:
     """Set up a bot
 
