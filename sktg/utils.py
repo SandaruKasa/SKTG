@@ -6,6 +6,7 @@ import typing
 from typing import TypeVar
 
 import telegram.ext
+import telegram
 
 F = TypeVar('F')
 R = TypeVar('R')
@@ -37,10 +38,14 @@ class Blueprint:
         group_ids: dict[str, int] = {}
         applied_blueprints: set[str] = set()
         self._apply(dispatcher, group_ids, applied_blueprints)
-        if self._commands:
-            # todo: l10n
-            # todo: scopes
-            dispatcher.bot.set_my_commands(self._commands)
+        if (commands := list(self._all_comands())):
+            dispatcher.bot.set_my_commands(commands)
+
+    def _all_comands(self):
+        for child in self._children:
+            yield from child._all_comands()
+        for command in self._commands:
+            yield command
 
     def _apply(self, dispatcher: telegram.ext.Dispatcher, group_ids: dict[str, int], applied_blueprints: set[str]):
         for child in self._children:
@@ -76,9 +81,12 @@ class Blueprint:
             assert arity <= 2, f"{function} provided as a callback for command {name} of Blueprint {self.name} " \
                                f"takes {arity} arguments while 0 to 2 are expected"
 
+            # todo: chat actions
             match output:
                 case None:
                     reply_function = None
+                case "photo" | "p":
+                    reply_function = telegram.Message.reply_photo
                 case "text" | "t":
                     reply_function = telegram.Message.reply_text
                 case "sticker" | "s":

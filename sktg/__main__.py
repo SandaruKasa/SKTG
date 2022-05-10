@@ -6,6 +6,7 @@ from sktg import *
 create_bot(
     "junior",
     features.shrooms,
+    features.inspirobot,
 )
 
 for updater in updaters:
