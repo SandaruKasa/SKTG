@@ -8,3 +8,5 @@ __pycache__/
 
 logs/
 *.log
+
+/token.txt

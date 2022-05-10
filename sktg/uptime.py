@@ -2,25 +2,8 @@
 """
 
 import datetime
-import pathlib
-
-config_dir = pathlib.Path("config").resolve()
-assert config_dir.is_dir(), "Config directory not found"
-
-_token_file = config_dir / "token.txt"
 
 _startup_time: dict[int, datetime.datetime] = {}
-
-
-def get_token() -> str:
-    """Fetch bot token from the config/token.txt file
-
-    Returns:
-        str: The token of the bot in the 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew1 format
-    """
-    with open(_token_file) as f:
-        return f.read().strip()
-
 
 def set_startup_time(bot_id: int):
     """Sets the startup time of the bot with the given id to datetime.datetime.now()

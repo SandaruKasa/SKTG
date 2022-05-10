@@ -3,7 +3,7 @@ https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 """
 
 import telegram.ext
-from sktg.config import config_dir
+from sktg.persistance import *
 from sktg.utils import *
 
 blueprint = Blueprint("shrooms")
@@ -19,8 +19,8 @@ class StickerEmojiWhitelist(telegram.ext.MessageFilter):
 
 
 shroom_emoji_filter = StickerEmojiWhitelist("🍄")
-shroom_whitelist = StickerWhitelistFilter(config_dir / "shrooms.json")
-shroom_admins = UserWhitelistFilter(config_dir / "shroom_admins.txt")
+shroom_whitelist = StickerWhitelistFilter(persistance_dir / "shrooms.json")
+shroom_admins = UserWhitelistFilter(persistance_dir / "shroom_admins.txt")
 
 shroom_girl_id: str | None = None
 

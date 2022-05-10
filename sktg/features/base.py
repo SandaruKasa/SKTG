@@ -4,7 +4,7 @@ Added to a bot by the ``create_bot`` function of the module by default.
 import json
 import logging
 
-import sktg.config
+import sktg.uptime
 import telegram.ext
 from sktg.utils import Blueprint
 
@@ -59,7 +59,7 @@ def shrug():
 
 @base.command("uptime", output="t")
 def uptime(_message: telegram.Message, context: telegram.ext.CallbackContext):
-    uptime = sktg.config.get_uptime(context.bot.id)
+    uptime = sktg.uptime.get_uptime(context.bot.id)
     if uptime is None:
         return "Unkown"
     else:
