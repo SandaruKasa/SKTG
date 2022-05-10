@@ -2,28 +2,24 @@
 """
 
 import datetime
-import json
 import pathlib
 
 config_dir = pathlib.Path("config").resolve()
 assert config_dir.is_dir(), "Config directory not found"
 
-_token_file = config_dir / "tokens.json"
-_tokens: dict[str, str] = json.load(open(_token_file))
+_token_file = config_dir / "token.txt"
 
 _startup_time: dict[int, datetime.datetime] = {}
 
 
-def get_token(bot_name: str) -> str:
-    """Fetch bot token from the tokens.json file
-
-    Args:
-        bot_name (str): Local name of the bot, as provided in the tokens.json file
+def get_token() -> str:
+    """Fetch bot token from the config/token.txt file
 
     Returns:
         str: The token of the bot in the 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew1 format
     """
-    return _tokens[bot_name]
+    with open(_token_file) as f:
+        return f.read().strip()
 
 
 def set_startup_time(bot_id: int):
