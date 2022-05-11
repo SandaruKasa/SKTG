@@ -2,16 +2,24 @@
 """
 
 import datetime
+import logging
+import os
+from pathlib import Path
 
-_startup_time: dict[int, datetime.datetime] = {}
+datetime_fmt = r"%Y-%m-%dT%H-%M-%S"
 
-def set_startup_time(bot_id: int):
-    """Sets the startup time of the bot with the given id to datetime.datetime.now()
 
-    Args:
-        bot_id (int): Telegram's user id fot the bot
-    """
-    _startup_time[bot_id] = datetime.datetime.now()
+config_dir = Path("config")
+assert config_dir.is_dir(), "Config directory doesn't exist"
+
+
+token = os.getenv("TOKEN")
+if token is None:
+    with open(config_dir / "token.txt") as f:
+        token = f.read().strip()
+
+
+startup_time: None | datetime.datetime = None
 
 
 def get_uptime(bot_id: int) -> datetime.timedelta | None:
@@ -26,7 +34,6 @@ def get_uptime(bot_id: int) -> datetime.timedelta | None:
         datetime.timedelta | None: timedelta representing the uptime of the bot with the given id
                                    (or None if ``set_startup_time``) wasn't called
     """
-    startup_time = _startup_time.get(bot_id)
     if startup_time is not None:
         return datetime.datetime.now() - startup_time
     else:

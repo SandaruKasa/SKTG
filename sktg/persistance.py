@@ -1,109 +1,101 @@
-import abc
-import json
+import datetime
+import logging
 import pathlib
-import typing
+from dataclasses import dataclass
+from typing import Callable, Iterable
 
-import telegram
-import telegram.ext
+import peewee
+from peewee import IntegerField, TextField
 
-persistance_dir = pathlib.Path("config")
+from . import config
 
-class WhitelistFilter(telegram.ext.MessageFilter):
-    WL = typing.TypeVar("WL")
-
-    def __init__(self, underlying_file: pathlib.Path, whitelist_default: WL):
-        self._file = underlying_file.resolve()
-
-        if self._file.exists():
-            with open(self._file) as f:
-                self._whitelist = self.deserialize(f.read())
-        else:
-            self._whitelist = whitelist_default
-
-    @abc.abstractmethod
-    def serialize(self, whitelist: WL) -> str:
-        ...
-
-    @abc.abstractmethod
-    def deserialize(self, s: str) -> WL:
-        ...
-
-    def _flush(self):
-        with open(self._file, "w") as f:
-            f.write(self.serialize(self._whitelist))
+logger = logging.getLogger(__name__)
 
 
-class UserWhitelistFilter(WhitelistFilter):
-    def __init__(self, underlying_file: pathlib.Path):
-        super().__init__(underlying_file, set())
-
-    def filter(self, message: telegram.Message) -> bool:
-        return message.from_user.id in self._whitelist
-
-    def serialize(self, whitelist: set[int]) -> str:
-        return "\n".join(map(str, whitelist))
-
-    def deserialize(self, s: str) -> set[int]:
-        return set(map(int, s.strip().splitlines()))
-
-    def remove(self, user_id: int) -> bool:
-        if user_id in self._whitelist:
-            self._whitelist.remove(user_id)
-            self._flush()
-            return True
-        else:
-            return False
-
-    def add(self, user_id: int) -> bool:
-        if user_id in self._whitelist:
-            return False
-        else:
-            self._whitelist.add(user_id)
-            self._flush()
-            return True
+database = peewee.SqliteDatabase(config.config_dir / "database.sqlite3")
 
 
-class StickerWhitelistFilter(WhitelistFilter):
-    def __init__(self, underlying_file: pathlib.Path):
-        super().__init__(underlying_file, {"stickers": [], "sets": []})
+class BaseModel(peewee.Model):
+    class Meta:
+        database = database
 
-    def serialize(self, whitelist: dict) -> str:
-        return json.dumps(whitelist, indent=4)
 
-    def deserialize(self, s: str) -> dict:
-        return json.loads(s)
+models = []
 
-    @property
-    def _stickers(self) -> list[str]:
-        return self._whitelist["stickers"]
 
-    @property
-    def _sets(self) -> list[str]:
-        return self._whitelist["sets"]
+def create_table(model: BaseModel):
+    models.append(model)
+    return model
 
-    def filter(self, message: telegram.Message) -> bool | None:
-        if sticker := message.sticker:
-            return (
-                sticker.file_unique_id in self._stickers
-                or sticker.set_name in self._sets
-            )
 
-    def add_stickers(self, *file_unique_ids: str) -> list[bool]:
-        result = []
-        for file_unique_id in file_unique_ids:
-            if file_unique_id in self._stickers:
-                result.append(False)
-            else:
-                self._stickers.append(file_unique_id)
-                result.append(True)
-        if any(result):
-            self._flush()
-        return result
+@dataclass
+class Migration:
+    task: Callable[[], None]
+    priority: int = 0
 
-    def add_set(self, set_name: str) -> bool:
-        if set_name in self._sets:
-            return False
-        else:
-            self._sets.append(set_name)
-            self._flush()
-            return True
+
+migrations: list[Migration] = []
+
+
+def migration(priroity: int = 0):
+    def decorator(task: Callable[[], None]):
+        migrations.append(Migration(task=task, priority=priroity))
+
+    return decorator
+
+
+def init():
+    logger.debug("Initializing the database...")
+    with database:
+        logger.debug(f"Creating tables for {len(models)} models...")
+        database.create_tables(models)
+
+        migrations.sort(key=lambda m: m.priority)
+        n = len(migrations)
+        for (i, migration) in enumerate(migrations, start=1):
+            logger.debug(f"Running migration {i}/{n}: {migration.task.__name__}")
+            migration.task()
+        logger.debug("Migrations applied")
+    logger.info("Database initialized")
+
+
+@create_table
+class BotAdmin(BaseModel):
+    user_id = IntegerField(unique=True, index=True)
+
+    @staticmethod
+    def add(user_id: int) -> bool:
+        return BotAdmin.get_or_create(user_id=user_id)[1]
+
+
+def add_admins_from_txt(file: pathlib.Path):
+    assert file.is_file()
+    admins = []
+    with open(file) as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                admins.append(int(line))
+    with database.atomic():
+        result = list(map(BotAdmin.add, admins))
+    logger.info(
+        f"Found {len(result)} admins in {file}, "
+        f"added {result.count(True)} new to the databse"
+    )
+    file.rename(file.with_suffix(f".migrated{file.suffix}"))
+
+
+@migration(priroity=100)
+def admins_override():
+    override = config.config_dir / "admins_override.txt"
+    backup = config.config_dir / "admins_backup.txt"
+
+    if override.exists():
+        with open(backup, "a") as f:
+            f.write(datetime.datetime.utcnow().strftime(config.datetime_fmt))
+            f.write("\n")
+            for bot_admin in BotAdmin.select():
+                f.write(f"{bot_admin.user_id}\n")
+                bot_admin.delete_instance()
+            f.write("\n")
+        return add_admins_from_txt(override)

@@ -4,6 +4,23 @@ import typing
 import telegram
 import telegram.ext
 
+from . import persistance
+
+
+class _BotAdminFilter(telegram.ext.BaseFilter):
+    def __call__(self, update: telegram.Update) -> bool | None:
+        if (effective_user := update.effective_user) is None:
+            return None
+        return bool(
+            persistance.BotAdmin.select().where(
+                persistance.BotAdmin.user_id == effective_user.id
+            )
+        )
+
+
+BOT_ADMIN_FILTER = _BotAdminFilter()
+
+
 F = typing.TypeVar("F")
 R = typing.TypeVar("R")
 CommandCallback = typing.Callable[[telegram.Message, telegram.ext.CallbackContext], R]

@@ -9,4 +9,8 @@ __pycache__/
 logs/
 *.log
 
-/token.txt
+*.db
+*.sqlite
+*.sqlite3
+
+docker-compose.override.yml

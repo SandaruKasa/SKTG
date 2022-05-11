@@ -2,9 +2,10 @@ import datetime
 
 import requests
 import telegram
-from sktg.utils import Blueprint
 
-inspirobot = Blueprint("inspirobot")
+from .. import tg_utils
+
+inspirobot = tg_utils.Blueprint("inspirobot")
 
 
 @inspirobot.command(

@@ -1,0 +1,6 @@
+services:
+  bot:
+    volumes:
+      - ./sktg:/app/sktg
+    environment:
+      - LOGLEVEL=DEBUG

@@ -2,11 +2,11 @@
 Added to a bot by the ``create_bot`` function of the module by default.
 """
 
-import sktg.uptime
 import telegram.ext
-from sktg.utils import Blueprint
 
-base = Blueprint("base")
+from .. import config, tg_utils
+
+base = tg_utils.Blueprint("base")
 
 
 @base.command(
@@ -21,11 +21,11 @@ def shrug():
     return r"¯\_(ツ)_/¯"
 
 
-@base.command("uptime", output="t")
+@base.command("uptime", output="t", filters=tg_utils.BOT_ADMIN_FILTER)
 def uptime(_message: telegram.Message, context: telegram.ext.CallbackContext):
-    uptime = sktg.uptime.get_uptime(context.bot.id)
-    if uptime is None:
-        return "Unkown"
+    result = config.get_uptime(context.bot.id)
+    if result is None:
+        return "Unknown"
     else:
         # stripping microseconds
-        return str(uptime).split(".")[0]
+        return str(result).split(".")[0]
