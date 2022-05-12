@@ -2,13 +2,12 @@
 https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 """
 
-import logging
 from typing import Iterable
 
 import telegram
 import telegram.ext
 
-from .. import config, persistance, tg_utils
+from .. import persistance, tg_utils
 
 blueprint = tg_utils.Blueprint("shrooms")
 
@@ -46,37 +45,6 @@ class ShroomStickerSet(persistance.BaseModel):
 
 def add_sticker_set(set_name: str) -> bool:
     return ShroomStickerSet.get_or_create(set_name=set_name)[1]
-
-
-@persistance.migration()
-def shooms_from_json():
-    json_file = config.config_dir / "shrooms.json"
-    if json_file.exists():
-        import json
-
-        logger = logging.getLogger("Shrooms migration")
-
-        with open(json_file) as f:
-            shrooms_data = json.load(f)
-
-        result = add_stickers(shrooms_data.get("stickers", []))
-        logger.info(
-            f"Found {len(result)} stickers, added {result.count(True)} new to the databse"
-        )
-
-        result = list(map(add_sticker_set, shrooms_data.get("sets", [])))
-        logger.info(
-            f"Found {len(result)} sets, added {result.count(True)} new to the databse"
-        )
-
-        json_file.rename(json_file.with_name("shrooms.migrated.json"))
-
-
-@persistance.migration()
-def bot_admins_from_shroom_admins():
-    file = config.config_dir / "shroom_admins.txt"
-    if file.exists():
-        return persistance.add_admins_from_txt(file)
 
 
 class _ShroomPersistantWhitelist(telegram.ext.MessageFilter):

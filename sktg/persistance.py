@@ -70,32 +70,41 @@ class BotAdmin(BaseModel):
 
 def add_admins_from_txt(file: pathlib.Path):
     assert file.is_file()
-    admins = []
-    with open(file) as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                admins.append(int(line))
-    with database.atomic():
-        result = list(map(BotAdmin.add, admins))
-    logger.info(
-        f"Found {len(result)} admins in {file}, "
-        f"added {result.count(True)} new to the databse"
-    )
-    file.rename(file.with_suffix(f".migrated{file.suffix}"))
 
 
 @migration(priroity=100)
 def admins_override():
-    override = config.config_dir / "admins_override.txt"
-    backup = config.config_dir / "admins_backup.txt"
+    override_file = config.config_dir / "admins_override.txt"
+    backup_file = config.config_dir / "admins_backup.txt"
 
-    if override.exists():
-        with open(backup, "a") as f:
-            f.write(datetime.datetime.utcnow().strftime(config.datetime_fmt))
-            f.write("\n")
-            for bot_admin in BotAdmin.select():
-                f.write(f"{bot_admin.user_id}\n")
-                bot_admin.delete_instance()
-            f.write("\n")
-        return add_admins_from_txt(override)
+    if not override_file.exists():
+        return
+
+    logger.info(f"Found {override_file}, applying...")
+
+    with database.atomic():
+        if admins := BotAdmin.select():
+            logger.info("Backing up previous admins...")
+            backed_up = 0
+            with open(backup_file, "a") as f:
+                f.write(datetime.datetime.utcnow().strftime(config.datetime_fmt))
+                f.write("\n")
+                for bot_admin in admins:
+                    f.write(f"{bot_admin.user_id}\n")
+                    bot_admin.delete_instance()
+                    backed_up += 1
+                f.write("\n")
+            logger.info(f"Backed up {backed_up} previously set admins")
+
+        admins = []
+        with open(override_file) as f:
+            for line in f:
+                if line := line.strip():
+                    admins.append(int(line))
+        logger.info(f"Found {len(admins)} entires in {override_file}")
+
+        added = list(map(BotAdmin.add, admins)).count(True)
+        logger.info(f"Added {added} new admins to the databse")
+        override_file.rename(
+            override_file.with_suffix(f".migrated{override_file.suffix}")
+        )
