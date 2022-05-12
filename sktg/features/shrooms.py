@@ -4,24 +4,8 @@ https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 
 from typing import Iterable
 
-import telegram
-import telegram.ext
-
-from .. import persistance, tg_utils
-
-blueprint = tg_utils.Blueprint("shrooms")
-
-
-class StickerEmojiWhitelist(telegram.ext.MessageFilter):
-    def __init__(self, *emojis: str):
-        self.emojis = emojis
-
-    def filter(self, message: telegram.Message) -> bool | None:
-        if message.sticker:
-            return message.sticker.emoji in self.emojis
-
-
-SHROOM_EMOJI_FILTER = StickerEmojiWhitelist("🍄")
+from .. import persistance
+from ..telegram import *
 
 
 @persistance.create_table
@@ -47,91 +31,79 @@ def add_sticker_set(set_name: str) -> bool:
     return ShroomStickerSet.get_or_create(set_name=set_name)[1]
 
 
-class _ShroomPersistantWhitelist(telegram.ext.MessageFilter):
-    def filter(self, message: telegram.Message) -> bool | None:
-        sticker: None | telegram.Sticker = message.sticker
-        if sticker is not None:
-            return bool(
-                ShroomSticker.select().where(
-                    ShroomSticker.file_unique_id == sticker.file_unique_id
-                )
-            ) or bool(
-                ShroomStickerSet.select().where(
-                    ShroomStickerSet.set_name == sticker.set_name
-                )
-            )
+def shroom_emoji_filter(message: types.Message) -> bool:
+    return message.sticker and message.sticker.emoji == "🍄"
 
 
-SHROOM_PERSISTANT_FILTER = _ShroomPersistantWhitelist()
+def shroom_sticker_filter(message: types.Message) -> bool:
+    return message.sticker and ShroomSticker.select().where(
+        ShroomSticker.file_unique_id == message.sticker.file_unique_id
+    )
+
+
+def shroom_stickerset_filter(message: types.Message) -> bool:
+    return message.sticker and ShroomStickerSet.select().where(
+        ShroomStickerSet.set_name == message.sticker.set_name
+    )
+
 
 SHROOM_GIRL_FILE_ID: str | None = None
 
 
-@blueprint.command("shroom", output="s")
-def send_shroom_girl(_message: telegram.Message, context: telegram.ext.CallbackContext):
+@dp.message_handler(shroom_stickerset_filter, content_types=types.ContentTypes.STICKER)
+@dp.message_handler(shroom_sticker_filter, content_types=types.ContentTypes.STICKER)
+@dp.message_handler(shroom_emoji_filter, content_types=types.ContentTypes.STICKER)
+@dp.message_handler(commands=["shroom"])
+async def reply_with_shroom_girl(message: types.Message):
     global SHROOM_GIRL_FILE_ID
     if SHROOM_GIRL_FILE_ID is None:
         SHROOM_GIRL_FILE_ID = (
-            context.bot.get_sticker_set(name="DPDvT_SandaruKasa").stickers[98].file_id
+            (await bot.get_sticker_set(name="DPDvT_SandaruKasa")).stickers[98].file_id
         )
-    return SHROOM_GIRL_FILE_ID
+    return await message.reply_sticker(sticker=SHROOM_GIRL_FILE_ID)
 
 
-blueprint.add_handler(
-    telegram.ext.MessageHandler(
-        filters=SHROOM_EMOJI_FILTER | SHROOM_PERSISTANT_FILTER,
-        callback=tg_utils.wrap_command_callback(send_shroom_girl),
-    )
-)
-
-
-def replied_sticker(message: telegram.Message) -> telegram.Sticker | None:
+def replied_sticker(message: types.Message) -> types.Sticker | None:
     if message.reply_to_message is not None:
         return message.reply_to_message.sticker
     return None
 
 
-# todo: l10n
-
-
-@blueprint.command("add_shroom", filters=tg_utils.BOT_ADMIN_FILTER)
-def add_shroom(message: telegram.Message, context: telegram.ext.CallbackContext):
+@dp.message_handler(bot_admin_filter, commands=["add_shroom"])
+async def add_shroom(message: types.Message):
     if sticker := replied_sticker(message):
         if add_sticker(sticker.file_unique_id):
-            return send_shroom_girl(message, context)
+            return await reply_with_shroom_girl(message)
         else:
-            return message.reply_text("Already added")
+            return await message.reply("Already added")
     else:
-        return message.reply_text("Reply to a shroom, lol")
+        return await message.reply("Reply to a shroom, lol")
 
 
-@blueprint.command("add_shrooms", filters=tg_utils.BOT_ADMIN_FILTER)
-def add_shrooms(message: telegram.Message, context: telegram.ext.CallbackContext):
+@dp.message_handler(bot_admin_filter, commands=["add_shrooms"])
+async def add_shrooms(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:
-            shroom_set: telegram.StickerSet = context.bot.get_sticker_set(
-                name=sticker.set_name
-            )
+            shroom_set = await bot.get_sticker_set(name=sticker.set_name)
             shrooms = tuple(file.file_unique_id for file in shroom_set.stickers)
         else:
             shrooms = [sticker.file_unique_id]
         result = add_stickers(shrooms)
-        return send_shroom_girl(message, context).reply_text(
-            f"{result.count(True)} new shrooms added"
-        )
+        message = await reply_with_shroom_girl(message)
+        return await message.reply(f"{result.count(True)} new shrooms added")
     else:
-        return message.reply_text("Reply to a shroom sticker set, lol")
+        return await message.reply("Reply to a shroom sticker set, lol")
 
 
-@blueprint.command("add_shroomset", "add_mycelium", filters=tg_utils.BOT_ADMIN_FILTER)
-def add_shroomset(message: telegram.Message, context: telegram.ext.CallbackContext):
+@dp.message_handler(bot_admin_filter, commands=["add_shroomset", "add_mycelium"])
+async def add_shroomset(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:
             if add_sticker_set(sticker.set_name):
-                return send_shroom_girl(message, context)
+                return await reply_with_shroom_girl(message)
             else:
-                return message.reply_text("Already added")
+                return await message.reply("Already added")
         else:
-            return message.reply_text("It's standalone sticker")
+            return await message.reply("It's standalone sticker")
     else:
-        return message.reply_text("Reply to a shroom sticker set, lol")
+        return await message.reply("Reply to a shroom sticker set, lol")

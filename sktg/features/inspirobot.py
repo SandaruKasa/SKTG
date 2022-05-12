@@ -1,32 +1,27 @@
 import datetime
 
-import requests
-import telegram
+import aiohttp
 
-from .. import tg_utils
-
-inspirobot = tg_utils.Blueprint("inspirobot")
+from ..telegram import *
 
 
-@inspirobot.command(
-    "inspire", "inspirobot", description="AI-generated inspirational quote"
-)
-def inspire(message: telegram.Message):
-    message.chat.send_chat_action(telegram.ChatAction.UPLOAD_PHOTO)
+# todo: description="AI-generated inspirational quote"
+@dp.message_handler(commands=["inspire", "inspirobot"])
+async def inspire(message: types.Message):
+    await types.ChatActions.upload_photo()
 
     today = datetime.date.today()
     if today.month == 12 and today.day >= 20 or today.month == 1 and today.day <= 14:
         site = "xmascardbot.com"
     else:
         site = "inspirobot.me"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+            f"https://{site}/api", params={"generate": "true"}
+        ) as response:
+            picture_url = await response.text()
 
-    picture_url = requests.get(
-        f"https://{site}/api",
-        params={"generate": "true"},
-    ).text
-
-    return message.reply_photo(
+    return await message.reply_photo(
         photo=picture_url,
         caption=f"https://{site}/share?iuid={picture_url.split(site)[-1].strip('/')}",
-        quote=True,
     )

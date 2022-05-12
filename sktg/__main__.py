@@ -6,9 +6,9 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-import telegram.ext
+import aiogram
 
-from . import config, features, persistance, tg_utils
+from . import config, features, persistance, telegram
 
 logging.basicConfig(
     handlers=[
@@ -24,20 +24,19 @@ logging.basicConfig(
     datefmt=config.datetime_fmt,
 )
 
-updater = telegram.ext.Updater(config.token)
-logger = logging.getLogger(updater.bot.username)
+
+async def on_startup(dp: aiogram.dispatcher):
+    logging.info("Starting...")
+    persistance.init()
+    config.startup_time = datetime.now()
 
 
-logger.info("Starting...")
-persistance.init()
-tg_utils.Blueprint(
-    "junior",
-    features.base,
-    features.shrooms,
-    features.inspirobot,
-).apply(updater.dispatcher)
-updater.start_polling()
-config.startup_time = datetime.now()
-logger.info("Started")
-updater.idle()
-logger.info("Stopped")
+async def on_shutdown(dp: aiogram.dispatcher):
+    logging.info("Stopping...")
+
+
+aiogram.executor.start_polling(
+    dispatcher=telegram.dp,
+    on_startup=on_startup,
+    on_shutdown=on_shutdown,
+)

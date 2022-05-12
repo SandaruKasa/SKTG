@@ -1,29 +1,29 @@
 """Basic functionality I would like all the bots to have.
-Added to a bot by the ``create_bot`` function of the module by default.
 """
 
-from .. import config, tg_utils
-
-base = tg_utils.Blueprint("base")
-
-
-@base.command(
-    "source", "opensource", "github", output="t", disable_web_page_preview=True
-)
-def github_link():
-    return "https://github.com/SandaruKasa/SKTG/tree/dev"
+from .. import config
+from ..telegram import *
 
 
-@base.command("shrug", output="t")
-def shrug():
-    return r"¯\_(ツ)_/¯"
+@dp.message_handler(commands=["source", "opensource", "github"])
+async def github_link(message: types.Message):
+    return await message.reply(
+        "https://github.com/SandaruKasa/SKTG/tree/async",
+        disable_web_page_preview=True,
+    )
 
 
-@base.command("uptime", output="t", filters=tg_utils.BOT_ADMIN_FILTER)
-def uptime():
+@dp.message_handler(commands=["shrug"])
+async def shrug(message: types.Message):
+    return await message.reply(r"¯\_(ツ)_/¯")
+
+
+@dp.message_handler(bot_admin_filter, commands=["uptime"])
+async def uptime(message: types.Message):
     result = config.get_uptime()
     if result is None:
-        return "Unknown"
+        result = "Unknown"
     else:
         # stripping microseconds
-        return str(result).split(".")[0]
+        result = str(result).split(".")[0]
+    return await message.reply(text=result)
