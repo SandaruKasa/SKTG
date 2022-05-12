@@ -2,7 +2,6 @@
 """
 
 import datetime
-import logging
 import os
 from pathlib import Path
 
@@ -22,18 +21,7 @@ if token is None:
 startup_time: None | datetime.datetime = None
 
 
-def get_uptime(bot_id: int) -> datetime.timedelta | None:
-    """Get the uptime of a bot
-
-    ``set_startup_time`` must have been called for the given ``bot_id`` prior to this call.
-
-    Args:
-        bot_id (int): Telegram's user id fot the bot
-
-    Returns:
-        datetime.timedelta | None: timedelta representing the uptime of the bot with the given id
-                                   (or None if ``set_startup_time``) wasn't called
-    """
+def get_uptime() -> datetime.timedelta | None:
     if startup_time is not None:
         return datetime.datetime.now() - startup_time
     else:

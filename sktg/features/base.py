@@ -2,8 +2,6 @@
 Added to a bot by the ``create_bot`` function of the module by default.
 """
 
-import telegram.ext
-
 from .. import config, tg_utils
 
 base = tg_utils.Blueprint("base")
@@ -22,8 +20,8 @@ def shrug():
 
 
 @base.command("uptime", output="t", filters=tg_utils.BOT_ADMIN_FILTER)
-def uptime(_message: telegram.Message, context: telegram.ext.CallbackContext):
-    result = config.get_uptime(context.bot.id)
+def uptime():
+    result = config.get_uptime()
     if result is None:
         return "Unknown"
     else:
