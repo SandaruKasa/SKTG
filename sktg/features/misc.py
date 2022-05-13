@@ -1,11 +1,8 @@
-"""Basic functionality I would like all the bots to have.
-"""
-
 from .. import config
 from ..telegram import *
 
 
-@dp.message_handler(commands=["source", "opensource", "github"])
+@command("source", "opensource", "github")
 async def github_link(message: types.Message):
     return await message.reply(
         "https://github.com/SandaruKasa/SKTG/tree/async",
@@ -13,12 +10,12 @@ async def github_link(message: types.Message):
     )
 
 
-@dp.message_handler(commands=["shrug"])
+@command("shrug")
 async def shrug(message: types.Message):
     return await message.reply(r"¯\_(ツ)_/¯")
 
 
-@dp.message_handler(bot_admin_filter, commands=["uptime"])
+@command("uptime", admin_only=True)
 async def uptime(message: types.Message):
     result = config.get_uptime()
     if result is None:

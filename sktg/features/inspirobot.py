@@ -5,8 +5,7 @@ import aiohttp
 from ..telegram import *
 
 
-# todo: description="AI-generated inspirational quote"
-@dp.message_handler(commands=["inspire", "inspirobot"])
+@command("inspire", "inspirobot", description="AI-generated inspirational quote")
 async def inspire(message: types.Message):
     await types.ChatActions.upload_photo()
 

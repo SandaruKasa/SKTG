@@ -28,6 +28,7 @@ logging.basicConfig(
 async def on_startup(dp: aiogram.dispatcher):
     logging.info("Starting...")
     persistance.init()
+    await telegram.register_commands()
     config.startup_time = datetime.now()
 
 
