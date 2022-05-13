@@ -5,7 +5,7 @@ from ..telegram import *
 @command("source", "opensource", "github")
 async def github_link(message: types.Message):
     return await message.reply(
-        "https://github.com/SandaruKasa/SKTG/tree/async",
+        "https://github.com/SandaruKasa/SKTG",
         disable_web_page_preview=True,
     )
 
