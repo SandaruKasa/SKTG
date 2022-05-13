@@ -1,1 +1,1 @@
-from . import inspirobot, misc, shrooms
+from . import inspirobot, misc, regexp, shrooms

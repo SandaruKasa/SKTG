@@ -38,3 +38,11 @@ def command(
 
 async def register_commands():
     return await bot.set_my_commands(_commands)
+
+
+def extract_links(message: types.Message):
+    for entity in message.entities:
+        if entity.type == types.MessageEntityType.TEXT_LINK:
+            yield entity.url
+        elif entity.type == types.MessageEntityType.URL:
+            yield entity.get_text(message.text or message.caption)
