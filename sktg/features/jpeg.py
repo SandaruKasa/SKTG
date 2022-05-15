@@ -20,8 +20,15 @@ class CachedPhotoSize(persistance.BaseModel):
     message_id = persistance.IntegerField()
     width = persistance.IntegerField()
     height = persistance.IntegerField()
+    compression_rate = persistance.IntegerField()
     file_id = persistance.TextField()
     timestamp = persistance.DateTimeField(default=NOW)
+
+
+@persistance.migration()
+def add_compression_rate():
+    CachedPhotoSize.drop_table()
+    CachedPhotoSize.create_table()
 
 
 @scheduler.job(interval=CACHE_TTL)
@@ -48,17 +55,6 @@ def get_photosizes_from_message(message: types.Message) -> list[types.PhotoSize]
         return get_photosizes_from_message(message.reply_to_message)
 
 
-def get_cached_photosizes(chat_id: int, message_id: int) -> list[CachedPhotoSize]:
-    return sorted(
-        CachedPhotoSize.select().where(
-            (CachedPhotoSize.chat_id == chat_id)
-            & (CachedPhotoSize.message_id == message_id)
-        ),
-        key=size_of_photosize,
-        reverse=True,
-    )
-
-
 def resolution_buttons(
     photosizes: list[PhotoSize], selected: int
 ) -> Generator[types.InlineKeyboardButton, None, None]:
@@ -70,7 +66,7 @@ def resolution_buttons(
         )
 
 
-def compression_level_buttons(
+def compression_rate_buttons(
     selected: int,
 ) -> Generator[types.InlineKeyboardButton, None, None]:
     for i in range(4):
@@ -86,7 +82,7 @@ def keyboard(
     return (
         types.InlineKeyboardMarkup()
         .row(*resolution_buttons(photosizes, selected_resolution))
-        .row(*compression_level_buttons(selected_compression))
+        .row(*compression_rate_buttons(selected_compression))
     )
 
 
@@ -109,6 +105,7 @@ async def jpeg_init(message: types.Message):
                     width=photosize.width,
                     height=photosize.height,
                     file_id=photosize.file_id,
+                    compression_rate=0,
                 )
     else:
         await message.reply("No photo, lol")
@@ -118,10 +115,21 @@ def temp_file_name() -> str:
     return datetime.datetime.utcnow().isoformat().replace(":", "-").replace(".", "-")
 
 
-# todo: cache results?
 async def compress(
     message: types.Message, photo: CachedPhotoSize, compression_rate: int
 ):
+    if cached := list(
+        CachedPhotoSize.select().where(
+            (CachedPhotoSize.chat_id == message.chat.id)
+            & (CachedPhotoSize.message_id == message.message_id)
+            & (CachedPhotoSize.width == photo.width)
+            & (CachedPhotoSize.height == photo.height)
+            & (CachedPhotoSize.compression_rate == compression_rate)
+        )
+    ):
+        cached = cached[0]
+        return await message.edit_media(types.InputMediaPhoto(cached.file_id))
+
     file = Path("jpeg") / f"{temp_file_name()}.jpg"
     try:
         await message.bot.download_file_by_id(file_id=photo.file_id, destination=file)
@@ -131,7 +139,17 @@ async def compress(
             quality=[100, 10, 5, 1][compression_rate],
         )
         with open(file, "rb") as f:
-            return await message.edit_media(media=types.InputMediaPhoto(f))
+            result = await message.edit_media(media=types.InputMediaPhoto(f))
+        CachedPhotoSize.get_or_create(
+            chat_id=message.chat.id,
+            message_id=message.message_id,
+            width=photo.width,
+            height=photo.height,
+            file_id=get_photosizes_from_message(message)[0].file_id,
+            compression_rate=compression_rate,
+        )
+        return result
+
     finally:
         file.unlink(missing_ok=True)
 
@@ -162,7 +180,15 @@ async def jpeg(cq: types.CallbackQuery):
                     message.reply_markup.inline_keyboard[0]
                 )
                 selected_compression = selected
-        photosizes = get_cached_photosizes(message.chat.id, message.message_id)
+        photosizes = sorted(
+            CachedPhotoSize.select().where(
+                (CachedPhotoSize.chat_id == message.chat.id)
+                & (CachedPhotoSize.message_id == message.message_id)
+                & (CachedPhotoSize.compression_rate == 0)
+            ),
+            key=size_of_photosize,
+            reverse=True,
+        )
         if photosizes:
             message = await compress(
                 message=message,
@@ -177,5 +203,7 @@ async def jpeg(cq: types.CallbackQuery):
                 "This message is too old, sorry.\nTry using the /jpeg command."
             )
             await message.edit_reply_markup()
+    except aiogram.exceptions.RetryAfter as e:
+        cq_answer_text = f"Not so fast! Retry after {e.timeout} seconds"
     finally:
         await cq.answer(cq_answer_text)

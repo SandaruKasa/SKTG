@@ -1,8 +1,9 @@
 import datetime
 import logging
 import pathlib
+import typing
 from dataclasses import dataclass
-from typing import Callable, Iterable
+from typing import Callable
 
 import peewee
 from peewee import DateTimeField, IntegerField, TextField
@@ -41,6 +42,11 @@ def migration(priroity: int = 0):
     def decorator(task: Callable[[], None]):
         migrations.append(Migration(task=task, priority=priroity))
 
+    assert isinstance(priroity, int), (
+        "You should call migration()"
+        if isinstance(priroity, typing.Callable)
+        else "priority should be an integer"
+    )
     return decorator
 
 
