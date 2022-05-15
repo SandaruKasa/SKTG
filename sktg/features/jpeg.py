@@ -9,8 +9,6 @@ from ..telegram import *
 
 check_mark = "✅"
 
-# todo: actual compression
-
 
 @persistance.create_table
 class CachedPhotoSize(persistance.BaseModel):
@@ -59,11 +57,23 @@ def resolution_buttons(
         )
 
 
+def compression_level_buttons(
+    selected: int,
+) -> Generator[types.InlineKeyboardButton, None, None]:
+    for i in range(4):
+        yield types.InlineKeyboardButton(
+            text=(check_mark if i == selected else "") + f"🙈x{i}",
+            callback_data=f"jpeg_com_{i}",
+        )
+
+
 def keyboard(
-    photosizes: list[PhotoSize], selected_resolution: int
+    photosizes: list[PhotoSize], selected_resolution: int, selected_compression: int
 ) -> types.InlineKeyboardMarkup:
-    return types.InlineKeyboardMarkup().row(
-        *resolution_buttons(photosizes, selected_resolution)
+    return (
+        types.InlineKeyboardMarkup()
+        .row(*resolution_buttons(photosizes, selected_resolution))
+        .row(*compression_level_buttons(selected_compression))
     )
 
 
@@ -72,7 +82,11 @@ async def jpeg_init(message: types.Message):
     if photosizes := get_photosizes_from_message(message):
         message = await message.reply_photo(
             photosizes[0].file_id,
-            reply_markup=keyboard(photosizes, selected_resolution=0),
+            reply_markup=keyboard(
+                photosizes,
+                selected_resolution=0,
+                selected_compression=0,
+            ),
         )
         for photosize in photosizes:
             CachedPhotoSize.create(
@@ -91,31 +105,61 @@ def temp_file_name() -> str:
 
 
 # todo: cache results?
-async def compress(photo: CachedPhotoSize, message: types.Message):
-    width = photo.width
-    height = photo.height
+async def compress(
+    message: types.Message, photo: CachedPhotoSize, compression_rate: int
+):
     file = Path("jpeg") / f"{temp_file_name()}.jpg"
     try:
         await message.bot.download_file_by_id(file_id=photo.file_id, destination=file)
-        # PIL.Image.open(file).resize(
-        #     size=(int(width / 2), int(height / 2)),
-        # ).save(file, optimize=True, quality=10)
-        # PIL.Image.open(file).resize(
-        #     size=(width, height),
-        # ).save(file, optimize=True, quality=10)
+        PIL.Image.open(file).save(
+            file,
+            optimize=True,
+            quality=[100, 10, 5, 1][compression_rate],
+        )
         with open(file, "rb") as f:
             return await message.edit_media(media=types.InputMediaPhoto(f))
     finally:
         file.unlink(missing_ok=True)
 
 
+def index_of_a_button_that_starts_with_a_check_mark(
+    row: list[types.InlineKeyboardButton],
+) -> int:
+    for i, button in enumerate(row):
+        if button.text.startswith(check_mark):
+            return i
+
+
 @dp.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
 async def jpeg(cq: types.CallbackQuery):
+    cq_answer_text: str = ""
     try:
         message = cq.message
-        selected_resolution = int(cq.data.split("_")[-1])
+        __, mode, selected = cq.data.split("_")
+        selected = int(selected)
+        match mode:
+            case "res":
+                selected_resolution = selected
+                selected_compression = index_of_a_button_that_starts_with_a_check_mark(
+                    message.reply_markup.inline_keyboard[1]
+                )
+            case "com":
+                selected_resolution = index_of_a_button_that_starts_with_a_check_mark(
+                    message.reply_markup.inline_keyboard[0]
+                )
+                selected_compression = selected
         photosizes = get_cached_photosizes(message.chat.id, message.message_id)
-        message = await compress(photosizes[selected_resolution], message)
-        await message.edit_reply_markup(keyboard(photosizes, selected_resolution))
+        if photosizes:
+            message = await compress(
+                message=message,
+                photo=photosizes[selected_resolution],
+                compression_rate=selected_compression,
+            )
+            await message.edit_reply_markup(
+                keyboard(photosizes, selected_resolution, selected_compression)
+            )
+        else:
+            cq_answer_text = "This message is too old, sorry"  # todo: better text
+            await message.edit_reply_markup()
     finally:
-        await cq.answer()
+        await cq.answer(cq_answer_text)
