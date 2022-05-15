@@ -6,14 +6,16 @@ from dataclasses import dataclass
 from typing import Callable
 
 import peewee
-from peewee import DateTimeField, IntegerField, TextField
+from peewee import DateTimeField, IntegerField, PrimaryKeyField, TextField
 
 from . import config
 
 logger = logging.getLogger(__name__)
 
 
-database = peewee.SqliteDatabase(config.config_dir / "database.sqlite3")
+database = peewee.SqliteDatabase(
+    config.config_dir / "database.sqlite3", pragmas={"foreign_keys": 1}
+)
 
 
 class BaseModel(peewee.Model):

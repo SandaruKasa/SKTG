@@ -14,45 +14,67 @@ CACHE_TTL = datetime.timedelta(days=1)
 logger = logging.getLogger(__name__)
 
 
+@persistance.migration()
+def add_compression_rate():
+    persistance.database.execute_sql("DROP TABLE IF EXISTS cachedphotosize;")
+
+
 @persistance.create_table
-class CachedPhotoSize(persistance.BaseModel):
+class JpegSession(persistance.BaseModel):
+    id = persistance.PrimaryKeyField()
     chat_id = persistance.IntegerField()
     message_id = persistance.IntegerField()
+    timestamp = persistance.DateTimeField(default=NOW)
+
+
+def get_session(message: types.Message) -> JpegSession | None:
+    return JpegSession.get_or_none(
+        JpegSession.chat_id == message.chat.id,
+        JpegSession.message_id == message.message_id,
+    )
+
+
+@persistance.create_table
+class CachedOriginal(persistance.BaseModel):
+    session = persistance.peewee.ForeignKeyField(
+        model=JpegSession, backref="originals", on_delete="CASCADE"
+    )
+    width = persistance.IntegerField()
+    height = persistance.IntegerField()
+    file_id = persistance.TextField()
+
+
+@persistance.create_table
+class CachedJpeg(persistance.BaseModel):
+    session = persistance.peewee.ForeignKeyField(
+        model=JpegSession, backref="results", on_delete="CASCADE"
+    )
     width = persistance.IntegerField()
     height = persistance.IntegerField()
     compression_rate = persistance.IntegerField()
     file_id = persistance.TextField()
-    timestamp = persistance.DateTimeField(default=NOW)
 
 
-@persistance.migration()
-def add_compression_rate():
-    CachedPhotoSize.drop_table()
-    CachedPhotoSize.create_table()
+@scheduler.job(interval=CACHE_TTL / 2)
+def prune_cache():
+    logger.debug("Prunning jpeg cache...")
+    with persistance.database, persistance.database.atomic():
+        JpegSession.delete().where(JpegSession.timestamp < NOW() - CACHE_TTL).execute()
+    logger.debug("Jpeg cache prunned")
 
 
-@scheduler.job(interval=CACHE_TTL)
-def prune_photosizes_cache():
-    logger.info("Removing outdated CachedPhotoSize's...")
-    with persistance.database.atomic():
-        CachedPhotoSize.delete().where(
-            CachedPhotoSize.timestamp < NOW() - CACHE_TTL
-        ).execute()
-    logger.info("Outdated CachedPhotoSize's removed")
-
-
-PhotoSize = Union[types.PhotoSize, CachedPhotoSize]
+PhotoSize = Union[types.PhotoSize, CachedOriginal]
 
 
 def size_of_photosize(photosize: PhotoSize) -> int:
     return photosize.width * photosize.height
 
 
-def get_photosizes_from_message(message: types.Message) -> list[types.PhotoSize] | None:
+def get_photosizes(message: types.Message) -> list[types.PhotoSize] | None:
     if message.photo:
         return sorted(message.photo, key=size_of_photosize, reverse=True)
     elif message.reply_to_message:
-        return get_photosizes_from_message(message.reply_to_message)
+        return get_photosizes(message.reply_to_message)
 
 
 def resolution_buttons(
@@ -88,27 +110,38 @@ def keyboard(
 
 @command("jpeg", description="Сожми меня жпегом, братан")
 async def jpeg_init(message: types.Message):
-    if photosizes := get_photosizes_from_message(message):
-        message = await message.reply_photo(
-            photosizes[0].file_id,
-            reply_markup=keyboard(
-                photosizes,
-                selected_resolution=0,
-                selected_compression=0,
-            ),
+    photosizes = get_photosizes(message)
+    if not photosizes:
+        return await message.reply("No photo, lol")
+
+    biggest = photosizes[0]
+    message = await message.reply_photo(
+        photo=biggest.file_id,
+        reply_markup=keyboard(
+            photosizes,
+            selected_resolution=0,
+            selected_compression=0,
+        ),
+    )
+    with persistance.database, persistance.database.atomic():
+        session = JpegSession.create(
+            chat_id=message.chat.id, message_id=message.message_id
         )
-        with persistance.database.atomic():
-            for photosize in photosizes:
-                CachedPhotoSize.create(
-                    chat_id=message.chat.id,
-                    message_id=message.message_id,
-                    width=photosize.width,
-                    height=photosize.height,
-                    file_id=photosize.file_id,
-                    compression_rate=0,
-                )
-    else:
-        await message.reply("No photo, lol")
+        for photosize in photosizes:
+            CachedOriginal.create(
+                session=session,
+                width=photosize.width,
+                height=photosize.height,
+                file_id=photosize.file_id,
+            )
+        CachedJpeg.create(
+            session=session,
+            width=biggest.width,
+            height=biggest.height,
+            compression_rate=0,
+            file_id=biggest.file_id,
+        )
+    return message
 
 
 def temp_file_name() -> str:
@@ -116,37 +149,46 @@ def temp_file_name() -> str:
 
 
 async def compress(
-    message: types.Message, photo: CachedPhotoSize, compression_rate: int
+    bot: aiogram.Bot,
+    session: JpegSession,
+    original: CachedOriginal,
+    compression_rate: int,
+    new_keyboard: types.InlineKeyboardMarkup,
 ):
-    if cached := list(
-        CachedPhotoSize.select().where(
-            (CachedPhotoSize.chat_id == message.chat.id)
-            & (CachedPhotoSize.message_id == message.message_id)
-            & (CachedPhotoSize.width == photo.width)
-            & (CachedPhotoSize.height == photo.height)
-            & (CachedPhotoSize.compression_rate == compression_rate)
-        )
+    if cached := CachedJpeg.get_or_none(
+        CachedJpeg.session == session,
+        CachedJpeg.width == original.width,
+        CachedJpeg.height == original.height,
+        CachedJpeg.compression_rate == compression_rate,
     ):
-        cached = cached[0]
-        return await message.edit_media(types.InputMediaPhoto(cached.file_id))
+        return await bot.edit_message_media(
+            media=types.InputMediaPhoto(cached.file_id),
+            chat_id=session.chat_id,
+            message_id=session.message_id,
+            reply_markup=new_keyboard,
+        )
 
     file = Path("jpeg") / f"{temp_file_name()}.jpg"
     try:
-        await message.bot.download_file_by_id(file_id=photo.file_id, destination=file)
+        await bot.download_file_by_id(file_id=original.file_id, destination=file)
         PIL.Image.open(file).save(
             file,
             optimize=True,
             quality=[100, 10, 5, 1][compression_rate],
         )
         with open(file, "rb") as f:
-            result = await message.edit_media(media=types.InputMediaPhoto(f))
-        CachedPhotoSize.get_or_create(
-            chat_id=message.chat.id,
-            message_id=message.message_id,
-            width=photo.width,
-            height=photo.height,
-            file_id=get_photosizes_from_message(message)[0].file_id,
+            result = await bot.edit_message_media(
+                media=types.InputMediaPhoto(f),
+                chat_id=session.chat_id,
+                message_id=session.message_id,
+                reply_markup=new_keyboard,
+            )
+        CachedJpeg.create(
+            session=session,
+            width=original.width,
+            height=original.height,
             compression_rate=compression_rate,
+            file_id=get_photosizes(result)[0].file_id,
         )
         return result
 
@@ -180,30 +222,30 @@ async def jpeg(cq: types.CallbackQuery):
                     message.reply_markup.inline_keyboard[0]
                 )
                 selected_compression = selected
-        photosizes = sorted(
-            CachedPhotoSize.select().where(
-                (CachedPhotoSize.chat_id == message.chat.id)
-                & (CachedPhotoSize.message_id == message.message_id)
-                & (CachedPhotoSize.compression_rate == 0)
-            ),
-            key=size_of_photosize,
-            reverse=True,
-        )
-        if photosizes:
-            message = await compress(
-                message=message,
-                photo=photosizes[selected_resolution],
-                compression_rate=selected_compression,
-            )
-            await message.edit_reply_markup(
-                keyboard(photosizes, selected_resolution, selected_compression)
-            )
-        else:
-            cq_answer_text = (
-                "This message is too old, sorry.\nTry using the /jpeg command."
-            )
-            await message.edit_reply_markup()
+        with persistance.database:
+            if session := get_session(message):
+                originals = sorted(
+                    session.originals,
+                    key=size_of_photosize,
+                    reverse=True,
+                )
+                await compress(
+                    bot=cq.bot,
+                    session=session,
+                    original=originals[selected_resolution],
+                    compression_rate=selected_compression,
+                    new_keyboard=keyboard(
+                        originals, selected_resolution, selected_compression
+                    ),
+                )
+            else:
+                cq_answer_text = (
+                    "This message is too old, sorry.\nTry using the /jpeg command."
+                )
+                await message.edit_reply_markup()
     except aiogram.exceptions.RetryAfter as e:
         cq_answer_text = f"Not so fast! Retry after {e.timeout} seconds"
+    except aiogram.exceptions.MessageNotModified as e:
+        pass
     finally:
         await cq.answer(cq_answer_text)
