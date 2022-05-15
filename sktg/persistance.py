@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Callable, Iterable
 
 import peewee
-from peewee import IntegerField, TextField
+from peewee import DateTimeField, IntegerField, TextField
 
 from . import config
 
