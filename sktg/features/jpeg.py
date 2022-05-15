@@ -1,13 +1,17 @@
 import datetime
+import logging
 from pathlib import Path
 from typing import Generator, Union
 
 import PIL.Image
 
-from .. import persistance
+from .. import persistance, scheduler
 from ..telegram import *
 
-check_mark = "✅"
+CHECK_MARK = "✅"
+NOW = datetime.datetime.utcnow
+CACHE_TTL = datetime.timedelta(days=1)
+logger = logging.getLogger(__name__)
 
 
 @persistance.create_table
@@ -17,8 +21,17 @@ class CachedPhotoSize(persistance.BaseModel):
     width = persistance.IntegerField()
     height = persistance.IntegerField()
     file_id = persistance.TextField()
-    # todo: deletion
-    timestamp = persistance.DateTimeField(default=datetime.datetime.utcnow)
+    timestamp = persistance.DateTimeField(default=NOW)
+
+
+@scheduler.job(interval=CACHE_TTL)
+def prune_photosizes_cache():
+    logger.info("Removing outdated CachedPhotoSize's...")
+    with persistance.database.atomic():
+        CachedPhotoSize.delete().where(
+            CachedPhotoSize.timestamp < NOW() - CACHE_TTL
+        ).execute()
+    logger.info("Outdated CachedPhotoSize's removed")
 
 
 PhotoSize = Union[types.PhotoSize, CachedPhotoSize]
@@ -51,7 +64,7 @@ def resolution_buttons(
 ) -> Generator[types.InlineKeyboardButton, None, None]:
     for i, photo_size in enumerate(photosizes):
         yield types.InlineKeyboardButton(
-            text=(check_mark if i == selected else "")
+            text=(CHECK_MARK if i == selected else "")
             + f"{photo_size.width}x{photo_size.height}",
             callback_data=f"jpeg_res_{i}",
         )
@@ -62,7 +75,7 @@ def compression_level_buttons(
 ) -> Generator[types.InlineKeyboardButton, None, None]:
     for i in range(4):
         yield types.InlineKeyboardButton(
-            text=(check_mark if i == selected else "") + f"🙈x{i}",
+            text=(CHECK_MARK if i == selected else "") + f"🙈x{i}",
             callback_data=f"jpeg_com_{i}",
         )
 
@@ -88,14 +101,15 @@ async def jpeg_init(message: types.Message):
                 selected_compression=0,
             ),
         )
-        for photosize in photosizes:
-            CachedPhotoSize.create(
-                chat_id=message.chat.id,
-                message_id=message.message_id,
-                width=photosize.width,
-                height=photosize.height,
-                file_id=photosize.file_id,
-            )
+        with persistance.database.atomic():
+            for photosize in photosizes:
+                CachedPhotoSize.create(
+                    chat_id=message.chat.id,
+                    message_id=message.message_id,
+                    width=photosize.width,
+                    height=photosize.height,
+                    file_id=photosize.file_id,
+                )
     else:
         await message.reply("No photo, lol")
 
@@ -126,7 +140,7 @@ def index_of_a_button_that_starts_with_a_check_mark(
     row: list[types.InlineKeyboardButton],
 ) -> int:
     for i, button in enumerate(row):
-        if button.text.startswith(check_mark):
+        if button.text.startswith(CHECK_MARK):
             return i
 
 
@@ -159,7 +173,9 @@ async def jpeg(cq: types.CallbackQuery):
                 keyboard(photosizes, selected_resolution, selected_compression)
             )
         else:
-            cq_answer_text = "This message is too old, sorry"  # todo: better text
+            cq_answer_text = (
+                "This message is too old, sorry.\nTry using the /jpeg command."
+            )
             await message.edit_reply_markup()
     finally:
         await cq.answer(cq_answer_text)

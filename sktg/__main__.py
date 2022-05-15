@@ -8,7 +8,7 @@ from pathlib import Path
 
 import aiogram
 
-from . import config, features, persistance, telegram
+from . import config, features, persistance, scheduler, telegram
 
 logging.basicConfig(
     handlers=[
@@ -28,6 +28,7 @@ logging.basicConfig(
 async def on_startup(dp: aiogram.dispatcher):
     logging.info("Starting...")
     persistance.init()
+    scheduler.start()
     await telegram.register_commands()
     config.startup_time = datetime.now()
 

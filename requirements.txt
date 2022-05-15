@@ -2,3 +2,4 @@ aiogram==2.20
 aiohttp~=3.8.1
 peewee~=3.14.0
 pillow~=9.1
+timeloop~=1.0.2
