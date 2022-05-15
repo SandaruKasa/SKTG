@@ -14,11 +14,6 @@ CACHE_TTL = datetime.timedelta(days=1)
 logger = logging.getLogger(__name__)
 
 
-@persistance.migration()
-def add_compression_rate():
-    persistance.database.execute_sql("DROP TABLE IF EXISTS cachedphotosize;")
-
-
 @persistance.create_table
 class JpegSession(persistance.BaseModel):
     id = persistance.PrimaryKeyField()
