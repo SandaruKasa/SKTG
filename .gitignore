@@ -3,4 +3,6 @@
 
 /target/
 
+docker-compose.override.yml
+
 token.txt

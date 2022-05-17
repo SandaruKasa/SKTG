@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  bot:
+    build: .
+    environment:
+      - RUST_LOG=INFO
+      - BOT_TOKEN_FILE=/run/secrets/bot_token
+    secrets:
+      - bot_token
+
+secrets:
+  bot_token:
+    file: token.txt
