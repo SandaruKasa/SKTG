@@ -3,11 +3,46 @@ use teloxide::{prelude::*, utils::command::BotCommands};
 mod features;
 mod types;
 
+fn get_token() -> String {
+    use std::{
+        env,
+        fs::File,
+        io::{BufRead, BufReader},
+    };
+
+    if let Ok(token) = env::var("TELOXIDE_TOKEN").or(env::var("BOT_TOKEN")) {
+        return token;
+    }
+
+    log::debug!("No env variable with token found, defaulting to reading from file...");
+    
+    let token_file_path = match env::var("BOT_TOKEN_FILE") {
+        Ok(path) => path,
+        Err(_) => {
+            log::debug!("BOT_TOKEN_FILE env variable not set, defaulting to `token.txt`...");
+            "token.txt".to_string()
+        }
+    };
+
+    File::open(&token_file_path)
+        .and_then(|file| {
+            let mut token = String::new();
+            BufReader::new(file).read_line(&mut token).map(|_| token)
+        })
+        .map_err(|err| {
+            format!(
+                "Error reading token from file {:?}:\n{:?}",
+                token_file_path, err
+            )
+        })
+        .unwrap()
+}
+
 #[tokio::main]
 async fn main() {
     pretty_env_logger::init();
     log::info!("Initializing bot...");
-    let bot = Bot::from_env().auto_send();
+    let bot = Bot::new(get_token()).auto_send();
     log::info!("Starting {}...", bot.get_me().await.unwrap().username());
     teloxide::commands_repl(bot, answer, Command::ty()).await;
 }
