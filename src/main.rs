@@ -1,3 +1,5 @@
+use std::env;
+
 use teloxide::{prelude::*, utils::command::BotCommands};
 
 mod features;
@@ -5,7 +7,6 @@ mod types;
 
 fn get_token() -> String {
     use std::{
-        env,
         fs::File,
         io::{BufRead, BufReader},
     };
@@ -15,7 +16,7 @@ fn get_token() -> String {
     }
 
     log::debug!("No env variable with token found, defaulting to reading from file...");
-    
+
     let token_file_path = match env::var("BOT_TOKEN_FILE") {
         Ok(path) => path,
         Err(_) => {
@@ -40,6 +41,9 @@ fn get_token() -> String {
 
 #[tokio::main]
 async fn main() {
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", "INFO")
+    }
     pretty_env_logger::init();
     log::info!("Initializing bot...");
     let bot = Bot::new(get_token()).auto_send();
