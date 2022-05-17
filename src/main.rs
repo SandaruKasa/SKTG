@@ -1,9 +1,7 @@
-use reqwest::Url;
-use teloxide::{
-    payloads::SendPhotoSetters, prelude::*, types::InputFile, utils::command::BotCommands,
-};
+use teloxide::{prelude::*, utils::command::BotCommands};
 
-use std::error::Error;
+mod features;
+mod types;
 
 #[tokio::main]
 async fn main() {
@@ -24,35 +22,14 @@ enum Command {
     Inspire,
 }
 
-async fn answer(
-    bot: AutoSend<Bot>,
-    message: Message,
-    command: Command,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+async fn answer(bot: AutoSend<Bot>, message: Message, command: Command) -> types::Result<()> {
+    use features::*;
     match command {
         Command::Help => {
             bot.send_message(message.chat.id, Command::descriptions().to_string())
                 .await?;
         }
-        // todo: Christmas
-        // todo: modules
-        Command::Inspire => {
-            bot.send_chat_action(message.chat.id, teloxide::types::ChatAction::UploadPhoto)
-                .await
-                .ok();
-            let picture_url = reqwest::get("https://inspirobot.me/api?generate=true")
-                .await?
-                .text()
-                .await?;
-            let picture_url = Url::parse(&picture_url)?;
-            bot.send_photo(message.chat.id, InputFile::url(picture_url.clone()))
-                .reply_to_message_id(message.id)
-                .caption(format!(
-                    "https://inspirobot.me/share?iuid={}",
-                    picture_url.path().trim_start_matches("/")
-                ))
-                .await?;
-        }
+        Command::Inspire => inspirobot(bot, message).await?,
     };
 
     Ok(())
