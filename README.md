@@ -8,4 +8,4 @@ Unfinished & abandoned.
 
 Probably to the `dev` branch. Or the `main`/`master` (whatever it is).
 
-Alternatively, you can take a look at the `python` branch to see the original source code from the summer of 2020.
+Alternatively, you can take a look at the `python-old` branch to see the original source code from the summer of 2020.
