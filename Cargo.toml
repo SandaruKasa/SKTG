@@ -1,6 +1,6 @@
 [package]
 name = "sktg"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
@@ -10,5 +10,6 @@ teloxide = { version = "0.9", features = ["macros", "auto-send"] }
 log = "0.4"
 pretty_env_logger = "0.4"
 
+anyhow = "1.0"
 chrono = "0.4"
 reqwest = "0.11"

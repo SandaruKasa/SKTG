@@ -4,23 +4,54 @@ use teloxide::{
     adaptors::AutoSend,
     prelude::*,
     types::{InputFile, Message},
+    utils::command::BotCommands,
     Bot,
 };
 
-use crate::types::Result;
+use crate::types::Res;
 
-pub async fn inspirobot(bot: AutoSend<Bot>, message: Message) -> Result<()> {
+#[derive(BotCommands, Clone)]
+#[command(rename = "lowercase", description = "")]
+pub enum InspirobotCommands {
+    #[command(description = "send an AI-generated inspirational-quote.")]
+    Inspire,
+    #[command(description = "send a picture from inspirobot.me")]
+    Inspirobot,
+    #[command(description = "send an AI-generated Christams card.")]
+    Xmascardbot,
+}
+
+use InspirobotCommands::*;
+
+fn is_christmas() -> bool {
+    let today = Utc::now();
+    today.month() == 12 && today.day() >= 20 || today.month() == 1 && today.day() <= 14
+}
+
+const XMASCARDBOT: &str = "xmascardbot.com";
+const INSPIROBOT: &str = "inspirobot.me";
+
+pub async fn inspirobot(
+    bot: AutoSend<Bot>,
+    message: Message,
+    command: InspirobotCommands,
+) -> Res<()> {
     bot.send_chat_action(message.chat.id, teloxide::types::ChatAction::UploadPhoto)
         .await
         .ok();
 
-    let today = Utc::now();
-    let website =
-        if today.month() == 12 && today.day() >= 20 || today.month() == 1 && today.day() <= 14 {
-            "xmascardbot.com"
-        } else {
-            "inspirobot.me"
-        };
+    let website = match command {
+        Inspire => {
+            if is_christmas() {
+                XMASCARDBOT
+            } else {
+                INSPIROBOT
+            }
+        }
+        Xmascardbot => XMASCARDBOT,
+        Inspirobot => INSPIROBOT,
+    };
+
     let api_url = format!("https://{}/api?generate=true", website);
     let picture_url = Url::parse(&reqwest::get(&api_url).await?.text().await?)?;
     bot.send_photo(message.chat.id, InputFile::url(picture_url.clone()))

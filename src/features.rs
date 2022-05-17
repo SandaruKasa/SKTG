@@ -1,3 +1,3 @@
 mod inspirobot;
 
-pub use inspirobot::inspirobot;
+pub use inspirobot::{inspirobot, InspirobotCommands};
