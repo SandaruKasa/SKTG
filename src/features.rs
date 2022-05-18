@@ -1,3 +1,5 @@
 mod inspirobot;
+mod misc;
 
-pub use inspirobot::{inspirobot, InspirobotCommands};
+pub use inspirobot::*;
+pub use misc::*;
