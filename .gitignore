@@ -14,3 +14,6 @@ logs/
 *.sqlite3
 
 docker-compose.override.yml
+
+/target/
+token.txt
