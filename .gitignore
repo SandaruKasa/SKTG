@@ -3,4 +3,9 @@
 
 /target/
 
+/config/
+__pycache__/
+/docker*
+/Docker*
+
 token.txt
