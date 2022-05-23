@@ -1,5 +1,3 @@
-use std::env;
-
 use anyhow::Result;
 use teloxide::{dispatching::UpdateFilterExt, prelude::*};
 
@@ -11,10 +9,7 @@ use features::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "INFO")
-    }
-    pretty_env_logger::init();
+    config::init_logging();
     log::info!("Initializing bot...");
     let bot = Bot::new(config::get_token()?).auto_send();
     log::info!("Starting {}...", bot.get_me().await.unwrap().username());

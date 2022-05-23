@@ -5,6 +5,11 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use env_logger::{self, Builder, Env};
+
+pub fn init_logging() {
+    Builder::from_env(Env::default().default_filter_or("INFO")).init()
+}
 
 fn read_token(token_file_path: &str) -> Result<String> {
     let file = File::open(token_file_path).context("Error opening file")?;
