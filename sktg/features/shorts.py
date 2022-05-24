@@ -1,6 +1,15 @@
+import re
+from typing import Generator
+
 from ..telegram import *
 
-import re
+
+def extract_links(message: types.Message) -> Generator[str, None, None]:
+    for entity in message.entities:
+        if entity.type == types.MessageEntityType.TEXT_LINK:
+            yield entity.url
+        elif entity.type == types.MessageEntityType.URL:
+            yield entity.get_text(message.text or message.caption)
 
 
 # [\w] gives [0-9a-zA-Z_] in ASCII mode
@@ -15,4 +24,7 @@ async def youtube_shorts(message: types.Message):
     for link in extract_links(message):
         result, subs = youtube_short_link.subn(youtube_short_repl, link)
         if subs != 0:
-            await message.reply(result)
+            await message.reply(
+                f"Sorry, I hate YouTube Shorts.\nHere's your normal video:\n{result}",
+                disable_web_page_preview=True,
+            )
