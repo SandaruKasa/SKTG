@@ -5,10 +5,12 @@ use crate::types::Res;
 #[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "")]
 pub enum MiscCommands {
-    #[command(description = "send a ¯\\_(ツ)_/¯")]
+    #[command()]
     Shrug,
-    #[command(description = "send the link to the source code.")]
+    #[command()]
     GitHub,
+    #[command()]
+    Source,
 }
 
 use MiscCommands::*;
@@ -18,7 +20,7 @@ pub async fn misc(bot: AutoSend<Bot>, message: Message, command: MiscCommands) -
         message.chat.id,
         match command {
             Shrug => "¯\\_(ツ)_/¯",
-            GitHub => "https://github.com/SandaruKasa/SKTG/tree/rust",
+            GitHub | Source => "https://github.com/SandaruKasa/SKTG/tree/rust",
         },
     )
     .reply_to_message_id(message.id)

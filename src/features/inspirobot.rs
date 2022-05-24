@@ -13,12 +13,12 @@ use crate::types::Res;
 #[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "")]
 pub enum InspirobotCommands {
-    #[command(description = "send an AI-generated inspirational-quote.")]
+    #[command(description = "send an AI-generated inspirational-quote")]
     Inspire,
-    #[command(description = "send a picture from inspirobot.me")]
+    #[command()]
     Inspirobot,
-    #[command(description = "send an AI-generated Christams card.")]
-    Xmascardbot,
+    #[command()]
+    Xmas,
 }
 
 use InspirobotCommands::*;
@@ -48,7 +48,7 @@ pub async fn inspirobot(
                 INSPIROBOT
             }
         }
-        Xmascardbot => XMASCARDBOT,
+        Xmas => XMASCARDBOT,
         Inspirobot => INSPIROBOT,
     };
 

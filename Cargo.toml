@@ -1,6 +1,6 @@
 [package]
 name = "sktg"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 
 [dependencies]
@@ -13,3 +13,6 @@ env_logger = "0.9"
 anyhow = "1.0"
 chrono = "0.4"
 reqwest = "0.11"
+
+[patch.crates-io]
+teloxide-macros = { git = "https://github.com/SandaruKasa/teloxide-macros.git" }

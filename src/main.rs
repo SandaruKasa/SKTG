@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context as _, Result};
 use teloxide::{dispatching::UpdateFilterExt, prelude::*};
 
 mod config;
@@ -13,7 +13,11 @@ async fn main() -> Result<()> {
     log::info!("Initializing bot...");
     let bot = Bot::new(config::get_token()?).auto_send();
     log::info!("Starting {}...", bot.get_me().await.unwrap().username());
-
+    log::info!("Setting up commands...");
+    bot.set_my_commands(get_commands())
+        .await
+        .context("Error setting up comamnds")?;
+    log::info!("Commands are set up");
     let handler = Update::filter_message()
         .branch(
             dptree::entry()
@@ -27,6 +31,7 @@ async fn main() -> Result<()> {
         );
     Dispatcher::builder(bot, handler)
         .error_handler(LoggingErrorHandler::new())
+        .default_handler(move |_update| async {})
         .build()
         .setup_ctrlc_handler()
         .dispatch()

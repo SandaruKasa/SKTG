@@ -652,9 +652,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.11.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
+checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
 
 [[package]]
 name = "openssl"
@@ -995,7 +995,7 @@ dependencies = [
 
 [[package]]
 name = "sktg"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -1111,8 +1111,7 @@ dependencies = [
 [[package]]
 name = "teloxide-macros"
 version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f734a9766b169a6795cac8429bb4184b58689442a80a9d2eb3674e14ecb0364"
+source = "git+https://github.com/SandaruKasa/teloxide-macros.git#b5b5885cbc6cae420000e4e16a558116ffea41e1"
 dependencies = [
  "heck",
  "proc-macro2",
