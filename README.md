@@ -4,7 +4,7 @@ This is the source code of my Telegram bot.
 # Running
 ## You'll need:
 0. Git, lol
-1. Python (3.10 or later) or Docker (preferebaly with docker-compose)
+1. Python (3.10 or later) or Docker (preferably with docker-compose)
 2. A Telegram Bot API token
 
 ## Preparations:
@@ -66,4 +66,9 @@ python3 -m sktg
 
 # Contributing
 Just open a pull request or an issue!
-<!-- todo: a list of things I can use some help with -->
+I'll be grateful.
+
+# Other stuff to look at
+* `rust` branch: the same bot but in Rust.
+* `python-old` branch: my old Telegram bots, written in Python a long time ago (not too proud of that code).
+* `java` branch: an abandoned attempt to rewrite my old bots into Java.
