@@ -1,0 +1,4 @@
+FROM python:3-alpine
+RUN ["pip", "install", "requests"]
+WORKDIR /run
+CMD ["python3", "ImpDro.py"]
