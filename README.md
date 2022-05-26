@@ -27,7 +27,8 @@ to `docker-compose.override.yml`:
 it makes `docker-compose` mount the source code folder
 into the container, so that you don't have to
 rebuild the image every time you make a change,
-and it also increases the verbosity of logging.
+it also increases the verbosity of logging
+and disables auto-restarts of the service.
 1. Run 
 ```shell
 docker-compose up

@@ -4,3 +4,4 @@ services:
       - ./sktg:/app/sktg
     environment:
       - LOGLEVEL=DEBUG
+    restart: "no"

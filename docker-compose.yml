@@ -5,3 +5,4 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./config:/app/config
+    restart: always
