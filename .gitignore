@@ -5,6 +5,7 @@
 
 /config/
 __pycache__/
+venv/
 /docker*
 /Docker*
 
