@@ -10,8 +10,12 @@ This is the source code of my Telegram bot.
 ## Preparations:
 0. Clone the repo, obviously.
 1. Save your token into the `token.txt` file in the root of the repo.
-
-## Running:
+2. On Linux you will need to have `libssl-dev` and `pkg-config` installed to build this.
+If you're running Ubuntu,
+```shell
+sudo apt install libssl-dev pkg-config -y
+```
+## Building and running:
 1.
 ```shell
 cargo run
