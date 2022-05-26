@@ -1,7 +1,13 @@
 services:
   bot:
     volumes:
-      - ./sktg:/app/sktg
+      - ./sktg:/app/sktg:ro
     environment:
       - LOGLEVEL=DEBUG
     restart: "no"
+    # The following line allows you to omit
+    # `DOCKER_UID=$(id -u) DOCKER_GID=$(id -g)`
+    # from
+    # `DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker-compose up`.
+    # Just make sure the ids are correct (or remove the line entirely)
+    user: 1000:1000

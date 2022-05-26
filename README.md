@@ -29,12 +29,16 @@ into the container, so that you don't have to
 rebuild the image every time you make a change,
 it also increases the verbosity of logging
 and disables auto-restarts of the service.
-1. Run 
+1. Since some local directories are mounted into the docker container,
+you probably want to make sure the `UID:GID` inside the container matches
+your `UID:GID` outside of the container.
+Otherwise you may end up with files you cannot delete without `sudo`.
+So the command you want to execute is most likely
 ```shell
-docker-compose up
+DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker-compose up
 ```
 
-That's it. This is not a Docker guide,
+This is not a Docker guide,
 so you might want to look up things like
 ```shell
 docker-compose up --build

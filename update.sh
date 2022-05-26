@@ -3,4 +3,4 @@ set -euox pipefail
 cd "$(dirname "$0")"
 
 git pull
-docker-compose up --build --detach
+DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker-compose up --build --detach

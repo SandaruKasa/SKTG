@@ -6,3 +6,4 @@ services:
       - ./logs:/app/logs
       - ./config:/app/config
     restart: always
+    user: ${DOCKER_UID:-1000}:${DOCKER_UID:-1000}
