@@ -1,11 +1,10 @@
 import datetime
 import logging
-from pathlib import Path
 from typing import Generator, Union
 
 import PIL.Image
 
-from .. import persistance, scheduler
+from .. import config, persistance, scheduler
 from ..telegram import *
 
 CHECK_MARK = "✅"
@@ -21,12 +20,6 @@ class JpegSession(persistance.BaseModel):
     message_id = persistance.IntegerField()
     user_id = persistance.IntegerField()
     timestamp = persistance.DateTimeField(default=NOW)
-
-
-@persistance.migration()
-def recreate_jpeg_session_table():
-    JpegSession.drop_table()
-    JpegSession.create_table()
 
 
 def get_session(message: types.Message) -> JpegSession | None:
@@ -147,10 +140,6 @@ async def command_handler(user_message: types.Message):
         )
 
 
-def temp_file_name() -> str:
-    return datetime.datetime.utcnow().isoformat().replace(":", "-").replace(".", "-")
-
-
 async def compress(
     bot: aiogram.Bot,
     session: JpegSession,
@@ -171,7 +160,7 @@ async def compress(
             reply_markup=new_keyboard,
         )
 
-    file = Path("jpeg") / f"{temp_file_name()}.jpg"
+    file = config.get_temp_file_path().with_suffix(".jpg")
     try:
         await bot.download_file_by_id(file_id=original.file_id, destination=file)
         PIL.Image.open(file).save(

@@ -4,8 +4,20 @@
 import datetime
 import os
 from pathlib import Path
+import pathlib
 
 datetime_fmt = r"%Y-%m-%dT%H-%M-%S"
+
+temp_dir = Path("temp")
+temp_dir.mkdir(parents=True, exist_ok=True)
+
+
+def _get_temp_file_name() -> str:
+    return datetime.datetime.utcnow().isoformat().replace(":", "-").replace(".", "-")
+
+
+def get_temp_file_path() -> pathlib.Path:
+    return temp_dir / _get_temp_file_name()
 
 
 config_dir = Path("config")

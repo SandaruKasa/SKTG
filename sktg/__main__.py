@@ -26,9 +26,6 @@ logging.basicConfig(
 
 
 async def on_startup(dp: aiogram.dispatcher):
-    logging.info("Starting...")
-    persistance.init()
-    scheduler.start()
     await telegram.register_commands()
     config.startup_time = datetime.now()
 
@@ -37,6 +34,9 @@ async def on_shutdown(dp: aiogram.dispatcher):
     logging.info("Stopping...")
 
 
+logging.info("Starting...")
+persistance.init()
+scheduler.start()
 aiogram.executor.start_polling(
     dispatcher=telegram.dp,
     on_startup=on_startup,
