@@ -19,7 +19,14 @@ class JpegSession(persistance.BaseModel):
     id = persistance.PrimaryKeyField()
     chat_id = persistance.IntegerField()
     message_id = persistance.IntegerField()
+    user_id = persistance.IntegerField()
     timestamp = persistance.DateTimeField(default=NOW)
+
+
+@persistance.migration()
+def recreate_jpeg_session_table():
+    JpegSession.drop_table()
+    JpegSession.create_table()
 
 
 def get_session(message: types.Message) -> JpegSession | None:
@@ -104,14 +111,14 @@ def keyboard(
 
 
 @command("jpeg", description="Сожми меня жпегом, братан")
-async def jpeg_init(message: types.Message):
-    photosizes = get_photosizes(message)
+async def command_handler(user_message: types.Message):
+    photosizes = get_photosizes(user_message)
     if not photosizes:
-        return await message.reply("No photo, lol")
+        return await user_message.reply("No photo, lol")
 
-    biggest = photosizes[0]
-    message = await message.reply_photo(
-        photo=biggest.file_id,
+    biggest_photosize = photosizes[0]
+    bot_message = await user_message.reply_photo(
+        photo=biggest_photosize.file_id,
         reply_markup=keyboard(
             photosizes,
             selected_resolution=0,
@@ -120,7 +127,9 @@ async def jpeg_init(message: types.Message):
     )
     with persistance.database, persistance.database.atomic():
         session = JpegSession.create(
-            chat_id=message.chat.id, message_id=message.message_id
+            chat_id=bot_message.chat.id,
+            message_id=bot_message.message_id,
+            user_id=user_message.from_user.id,
         )
         for photosize in photosizes:
             CachedOriginal.create(
@@ -131,12 +140,11 @@ async def jpeg_init(message: types.Message):
             )
         CachedJpeg.create(
             session=session,
-            width=biggest.width,
-            height=biggest.height,
+            width=biggest_photosize.width,
+            height=biggest_photosize.height,
             compression_rate=0,
-            file_id=biggest.file_id,
+            file_id=biggest_photosize.file_id,
         )
-    return message
 
 
 def temp_file_name() -> str:
@@ -199,9 +207,7 @@ def index_of_a_button_that_starts_with_a_check_mark(
             return i
 
 
-@dp.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
-async def jpeg(cq: types.CallbackQuery):
-    cq_answer_text: str = ""
+async def callback_body(cq: types.CallbackQuery) -> str:
     try:
         message = cq.message
         __, mode, selected = cq.data.split("_")
@@ -219,6 +225,8 @@ async def jpeg(cq: types.CallbackQuery):
                 selected_compression = selected
         with persistance.database:
             if session := get_session(message):
+                if session.user_id != cq.from_user.id:
+                    return "This button is not for you"
                 originals = sorted(
                     session.originals,
                     key=size_of_photosize,
@@ -234,13 +242,19 @@ async def jpeg(cq: types.CallbackQuery):
                     ),
                 )
             else:
-                cq_answer_text = (
-                    "This message is too old, sorry.\nTry using the /jpeg command."
-                )
                 await message.edit_reply_markup()
+                return "This message is too old, sorry.\nTry using the /jpeg command."
+
     except aiogram.exceptions.RetryAfter as e:
-        cq_answer_text = f"Not so fast! Retry after {e.timeout} seconds"
-    except aiogram.exceptions.MessageNotModified as e:
+        return f"Not so fast! Retry after {e.timeout} seconds"
+    except aiogram.exceptions.MessageNotModified:
         pass
+
+
+@dp.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
+async def callback_handler(cq: types.CallbackQuery):
+    text = None
+    try:
+        text = await callback_body(cq)
     finally:
-        await cq.answer(cq_answer_text)
+        await cq.answer(text or "")
