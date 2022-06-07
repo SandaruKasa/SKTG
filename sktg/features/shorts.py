@@ -5,6 +5,10 @@ from ..telegram import *
 
 
 def extract_links(message: types.Message) -> Generator[str, None, None]:
+    # For the love of God, why do you have to treat captions and text differently?
+    # They behave exactly the same in the API and both represent the text part of the message.
+    # WHY WOULD YOU NEED TO PUT THEM IN DIFFERENT PLACES?
+    # SO THAT API USERS HAVE TO WRITE MORE IF'S?
     for entity in message.entities or message.caption_entities:
         if entity.type == types.MessageEntityType.TEXT_LINK:
             yield entity.url
@@ -13,7 +17,7 @@ def extract_links(message: types.Message) -> Generator[str, None, None]:
 
 
 # [\w] gives [0-9a-zA-Z_] in ASCII mode
-# `.*` in the beginning to prevent www.youtu.be from hapenning
+# `.*` in the beginning to prevent www.youtu.be from happening
 # `.*` in the end to get rid of ?feature=share and other useless metrics
 youtube_short_link = re.compile(r".*youtube\.com/shorts/([\w\-]{11}).*", flags=re.ASCII)
 youtube_short_repl = r"https://youtu.be/\1"

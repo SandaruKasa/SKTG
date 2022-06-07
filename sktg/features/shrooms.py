@@ -1,4 +1,4 @@
-"""Posting a Shroomjak girl in reply to mushrom stickers
+"""Posting a Shroomjak girl in reply to mushroom stickers
 https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 """
 

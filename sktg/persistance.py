@@ -40,13 +40,13 @@ class Migration:
 migrations: list[Migration] = []
 
 
-def migration(priroity: int = 0):
+def migration(priority: int = 0):
     def decorator(task: Callable[[], None]):
-        migrations.append(Migration(task=task, priority=priroity))
+        migrations.append(Migration(task=task, priority=priority))
 
-    assert isinstance(priroity, int), (
+    assert isinstance(priority, int), (
         "You should call migration()"
-        if isinstance(priroity, typing.Callable)
+        if isinstance(priority, typing.Callable)
         else "priority should be an integer"
     )
     return decorator
@@ -80,7 +80,7 @@ def add_admins_from_txt(file: pathlib.Path):
     assert file.is_file()
 
 
-@migration(priroity=100)
+@migration(priority=100)
 def admins_override():
     override_file = config.config_dir / "admins_override.txt"
     backup_file = config.config_dir / "admins_backup.txt"
@@ -112,7 +112,7 @@ def admins_override():
         logger.info(f"Found {len(admins)} entires in {override_file}")
 
         added = list(map(BotAdmin.add, admins)).count(True)
-        logger.info(f"Added {added} new admins to the databse")
+        logger.info(f"Added {added} new admins to the database")
         override_file.rename(
             override_file.with_suffix(f".migrated{override_file.suffix}")
         )

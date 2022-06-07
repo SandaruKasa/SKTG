@@ -103,7 +103,6 @@ def keyboard(
     )
 
 
-# todo: https://docs.aiogram.dev/en/latest/dispatcher/filters.html#commandsettings
 @command(
     "jpeg",
     description="Сожми меня жпегом, братан",
