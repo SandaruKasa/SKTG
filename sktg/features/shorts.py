@@ -5,7 +5,7 @@ from ..telegram import *
 
 
 def extract_links(message: types.Message) -> Generator[str, None, None]:
-    for entity in message.entities:
+    for entity in message.entities or message.caption_entities:
         if entity.type == types.MessageEntityType.TEXT_LINK:
             yield entity.url
         elif entity.type == types.MessageEntityType.URL:
@@ -19,12 +19,17 @@ youtube_short_link = re.compile(r".*youtube\.com/shorts/([\w\-]{11}).*", flags=r
 youtube_short_repl = r"https://youtu.be/\1"
 
 
-@dp.message_handler()
+@dp.message_handler(content_types=types.ContentTypes.ANY)
 async def youtube_shorts(message: types.Message):
+    result = []
     for link in extract_links(message):
-        result, subs = youtube_short_link.subn(youtube_short_repl, link)
+        substituted, subs = youtube_short_link.subn(youtube_short_repl, link)
         if subs != 0:
-            await message.reply(
-                f"Sorry, I hate YouTube Shorts.\nHere's your normal video:\n{result}",
-                disable_web_page_preview=True,
-            )
+            result.append(substituted)
+    if result:
+        await message.reply(
+            "Sorry, I hate YouTube Shorts.\nHere's your video in the normal format:\n"
+            + "\n".join(result),
+            disable_web_page_preview=True,
+        )
+    raise aiogram.dispatcher.handler.SkipHandler()  # so that it doesn't block other features
