@@ -26,6 +26,7 @@ def command(
     filters: Iterable[Callable[[types.Message], bool]] = [],
     description: str | None = None,
     admin_only: bool = False,
+    **kwargs
 ):
     if description:  # todo: i18n & l10n
         _commands.append(types.BotCommand(name, description))
@@ -33,7 +34,7 @@ def command(
     filters = list(filters)
     if admin_only:
         filters.append(bot_admin_filter)
-    return dp.message_handler(*filters, commands=[name, *aliases])
+    return dp.message_handler(*filters, commands=[name, *aliases], **kwargs)
 
 
 async def register_commands():

@@ -103,8 +103,14 @@ def keyboard(
     )
 
 
-@command("jpeg", description="Сожми меня жпегом, братан")
-async def command_handler(user_message: types.Message):
+# todo: https://docs.aiogram.dev/en/latest/dispatcher/filters.html#commandsettings
+@command(
+    "jpeg",
+    description="Сожми меня жпегом, братан",
+    content_types=types.ContentTypes.ANY,
+    commands_ignore_caption=False,
+)
+async def jpeg_command_handler(user_message: types.Message):
     photosizes = get_photosizes(user_message)
     if not photosizes:
         return await user_message.reply("No photo, lol")
@@ -196,7 +202,7 @@ def index_of_a_button_that_starts_with_a_check_mark(
             return i
 
 
-async def callback_body(cq: types.CallbackQuery) -> str:
+async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
     try:
         message = cq.message
         __, mode, selected = cq.data.split("_")
@@ -241,9 +247,9 @@ async def callback_body(cq: types.CallbackQuery) -> str:
 
 
 @dp.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
-async def callback_handler(cq: types.CallbackQuery):
+async def jpeg_callback_handler(cq: types.CallbackQuery):
     text = None
     try:
-        text = await callback_body(cq)
+        text = await jpeg_callback_body(cq)
     finally:
         await cq.answer(text or "")
