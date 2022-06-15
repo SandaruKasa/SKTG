@@ -1,1 +1,1 @@
-from . import inspirobot, jpeg, misc, shorts, shrooms
+from . import dice, inspirobot, jpeg, misc, shorts, shrooms

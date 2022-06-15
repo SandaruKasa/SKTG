@@ -1,7 +1,7 @@
 from typing import Callable, Iterable
 
 import aiogram
-from aiogram import types
+from aiogram import types, filters
 
 from . import config, persistance
 
