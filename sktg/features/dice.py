@@ -8,6 +8,8 @@ MAX_N = 100_000
 MIN_D = 2
 MAX_D = 100_000
 
+random.seed()
+
 
 @dp.message_handler(filters.RegexpCommandsFilter(["(\d*)d(\d+)"]))
 async def dice(message: types.Message, regexp_command: re.Match):
