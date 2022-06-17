@@ -10,4 +10,10 @@ target/
 config/
 logs/
 
-token.txt
+Dockerfile
+.dockeringore
+docker-compose*.yml
+
+.git/
+.gitignore
+.gitattributes
