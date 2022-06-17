@@ -1,0 +1,13 @@
+[package]
+name = "migration"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "migration"
+path = "src/lib.rs"
+
+[dependencies]
+entity = { path = "../entity" }
+sea-orm-migration = { version = "^0", features = ["sqlx-sqlite"] }

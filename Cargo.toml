@@ -1,17 +1,32 @@
+[workspace]
+members = [".", "entity", "migration"]
+
 [package]
 name = "sktg"
-version = "0.3.0"
+version = "0.4.0-pre1"
 edition = "2021"
 license = "AGPL-3"
 
 [dependencies]
+entity = { path = "entity" }
+migration = { path = "migration" }
+
 tokio = { version = "1.8", features = ["rt-multi-thread", "macros"] }
-teloxide = { version = "0.9", features = ["macros", "auto-send"] }
+teloxide = { version = "0.9", default-features = false, features = [
+  "macros",
+  "auto-send",
+  "ctrlc_handler",
+] }
+sea-orm = { version = "0.8", default-features = false, features = [
+  "sqlx-sqlite",
+  "runtime-tokio-native-tls",
+] }
 
 log = "0.4"
 env_logger = "0.9"
 
 anyhow = "1.0"
+
 chrono = "0.4"
 reqwest = "0.11"
 

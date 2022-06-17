@@ -3,6 +3,7 @@ use teloxide::{dispatching::UpdateFilterExt, prelude::*};
 
 mod config;
 mod features;
+mod persistance;
 mod types;
 
 use features::*;
@@ -10,6 +11,10 @@ use features::*;
 #[tokio::main]
 async fn main() -> Result<()> {
     config::init_logging();
+    log::info!("Initializing persistance...");
+    persistance::init()
+        .await
+        .context("Error initializing persistance")?;
     log::info!("Initializing bot...");
     let bot = Bot::new(config::get_token()?).auto_send();
     log::info!("Starting {}...", bot.get_me().await.unwrap().username());
