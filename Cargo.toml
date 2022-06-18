@@ -3,7 +3,7 @@ members = [".", "entity", "migration"]
 
 [package]
 name = "sktg"
-version = "0.4.0-pre1"
+version = "0.4.0-pre2"
 edition = "2021"
 license = "AGPL-3"
 
@@ -26,6 +26,7 @@ log = "0.4"
 env_logger = "0.9"
 
 anyhow = "1.0"
+lazy_static = "1.4"
 
 chrono = "0.4"
 reqwest = "0.11"

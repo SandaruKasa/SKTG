@@ -34,6 +34,7 @@ async fn main() -> Result<()> {
                 .filter_command::<InspirobotCommands>()
                 .endpoint(inspirobot),
         );
+    log::info!("Starting the dispatcher");
     Dispatcher::builder(bot, handler)
         .error_handler(LoggingErrorHandler::new())
         .default_handler(move |_update| async {})
