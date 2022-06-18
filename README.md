@@ -4,26 +4,38 @@ This is the source code of my Telegram bot.
 # Running
 ## You'll need:
 0. Git, lol
-1. Rust (1.58 or later)
+1. Rust (1.58 or later) or Docker (preferably with docker-compose)
 2. A Telegram Bot API token
 
 ## Preparations:
 0. Clone the repo, obviously.
 1. Save your token into the `token.txt` file in the root of the repo.
-2. On Linux you will need to have `libssl-dev` and `pkg-config` installed to build this.
+2. On Linux you will need to have `libssl-dev` and `pkg-config`
+installed to build this without Docker.
 If you're running Ubuntu,
 ```shell
 sudo apt install libssl-dev pkg-config -y
 ```
 ## Building and running:
+### Docker:
+0. For the ease of development, you can copy the 
+[`docker-compose.debug.yml`](docker-compose.debug.yml) file
+to `docker-compose.override.yml`:
+it increases the verbosity of logging
+and disables auto-restarts of the docker-compose service.
+1. Just run
+```shell
+docker-compose up
+```
+
+### No Docker:
 1.
 ```shell
 cargo run
 ```
 That's it.
 
-## P.S.
-* This is not a rust/cargo guide, so you might want to look up things like
+This is not a rust/cargo guide, so you might want to look up things like
 ```shell
 cargo run --release
 ```
@@ -33,11 +45,17 @@ cargo build
 ```shell
 cargo check
 ```
+```shell
+cargo clippy
+```
+## P.S.
 * You can change logging verbosity by passing a `RUST_LOG` env variable.
 Like this if you're on Linux:
 ```shell
 RUST_LOG=DEBUG cargo run
 ```
+* You can change the path to the sqlite database file
+by passing a `DATABASE_FILE` env variable.
 * You can change the path to the file with your token
 by passing a `BOT_TOKEN_FILE` env variable.
 * Or you can just directly pass the token via

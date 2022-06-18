@@ -1,0 +1,5 @@
+services:
+  bot:
+    environment:
+      - RUST_LOG=DEBUG
+    restart: "no"

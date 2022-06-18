@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  bot:
+    build: .
+    restart: always
+    secrets:
+      - token
+    environment:
+      - BOT_TOKEN_FILE=/run/secrets/token
+      - DATABASE_FILE=/run/database/db.sqlite3
+    volumes:
+      - database:/run/database
+secrets:
+  token:
+    file: ./token.txt
+volumes:
+  database:
