@@ -1,25 +1,23 @@
-.git/
-.git*
-
 .idea/
 .vscode/
 
-/config/
-logs/
-
-__pycache__/
 venv/
 env/
 
-target/
+__pycache__/
+/target/
 
-README*
-LICENSE*
+/tmp/
 
+token.txt
 *.sqlite*
 
 Dockerfile
-.dockerignore
-docker-compose*
+.dockeringore
+docker-compose*.yml
 
-token.txt
+.git/
+.git*
+
+README*
+LICENSE*

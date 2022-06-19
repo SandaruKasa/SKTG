@@ -4,13 +4,17 @@ This is the source code of my Telegram bot.
 # Running
 ## You'll need:
 0. Git, lol
-1. Rust (1.58 or later) or Docker (preferably with docker-compose)
+1. Rust (1.59 or later) or Docker (preferably with docker-compose)
 2. A Telegram Bot API token
 
 ## Preparations:
 0. Clone the repo, obviously.
 1. Save your token into the `token.txt` file in the root of the repo.
-2. On Linux you will need to have `libssl-dev` and `pkg-config`
+2. Create a database file
+```shell
+touch sktg.sqlite3
+```
+3. On Linux you will need to have `libssl-dev` and `pkg-config`
 installed to build this without Docker.
 If you're running Ubuntu,
 ```shell
@@ -35,34 +39,22 @@ cargo run
 ```
 That's it.
 
-This is not a rust/cargo guide, so you might want to look up things like
-```shell
-cargo run --release
-```
-```shell
-cargo build
-```
-```shell
-cargo check
-```
-```shell
-cargo clippy
-```
 ## P.S.
 * You can change logging verbosity by passing a `RUST_LOG` env variable.
 Like this if you're on Linux:
 ```shell
-RUST_LOG=DEBUG cargo run
+RUST_LOG=DEBUG python3 -m sktg
 ```
 * You can change the path to the sqlite database file
 by passing a `DATABASE_FILE` env variable.
 * You can change the path to the file with your token
 by passing a `BOT_TOKEN_FILE` env variable.
-* Or you can just directly pass the token via
-either a `TELOXIDE_TOKEN` or a `BOT_TOKEN` env variable.
+* Or you can just directly pass the token via a `BOT_TOKEN` env variable.
 
 # Contributing
 Just open a pull request or an issue!
+I'll be grateful.
+
 
 # Other stuff to look at
 * `python` branch: the same bot but in Python.

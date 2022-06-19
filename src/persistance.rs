@@ -1,5 +1,3 @@
-use std::fs::OpenOptions;
-
 use anyhow::{Context as _, Result};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
@@ -20,16 +18,6 @@ async fn apply_migrations() -> Result<(), DbErr> {
 }
 
 pub async fn init() -> Result<()> {
-    OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&*SQLITE_FILE_PATH)
-        .with_context(|| {
-            format!(
-                "Error making sure that the database file {:?} exists",
-                &*SQLITE_FILE_PATH
-            )
-        })?;
     apply_migrations()
         .await
         .context("Error applying migrations")?;

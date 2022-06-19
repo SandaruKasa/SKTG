@@ -1,14 +1,15 @@
 .idea/
 .vscode/
 
+venv/
+env/
+
+__pycache__/
 /target/
 
-/config/
-logs/
-__pycache__/
-venv/
-docker-compose.override.yml
+/tmp/
 
 token.txt
+*.sqlite*
 
-*.sqlite3*
+docker-compose.override.yml

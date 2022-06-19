@@ -2,12 +2,13 @@ version: "3.9"
 services:
   bot:
     build: .
-    restart: always
-    secrets:
-      - token
+    container_name: sktg
     environment:
       - BOT_TOKEN_FILE=/run/secrets/token
       - DATABASE_FILE=/run/database/db.sqlite3
+    restart: always
+    secrets:
+      - token
     volumes:
       - database:/run/database
 secrets:

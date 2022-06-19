@@ -44,7 +44,7 @@ fn read_token(token_file_path: &str) -> Result<String> {
 }
 
 pub fn get_token() -> Result<String> {
-    if let Ok(token) = env::var("TELOXIDE_TOKEN").or_else(|_| env::var("BOT_TOKEN")) {
+    if let Ok(token) = env::var("BOT_TOKEN") {
         return Ok(token);
     }
     log::debug!("No env variable with token found, defaulting to reading from file...");
