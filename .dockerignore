@@ -10,7 +10,7 @@ __pycache__/
 /tmp/
 
 token.txt
-# *.sqlite*
+*.sqlite*
 
 Dockerfile
 .dockeringore

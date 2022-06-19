@@ -56,6 +56,8 @@ by passing a `DATABASE_FILE` env variable.
 * You can change the path to the file with your token
 by passing a `BOT_TOKEN_FILE` env variable.
 * Or you can just directly pass the token via a `BOT_TOKEN` env variable.
+* And you can change the path to bot's tmp directory
+by passing a `TMP_DIR` env variable.
 
 # Contributing
 Just open a pull request or an issue!
