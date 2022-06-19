@@ -1,6 +1,6 @@
 [package]
 name = "migration"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 publish = false
 
@@ -9,5 +9,8 @@ name = "migration"
 path = "src/lib.rs"
 
 [dependencies]
-entity = { path = "../entity" }
-sea-orm-migration = { version = "^0", features = ["sqlx-sqlite"] }
+tokio = { version = "1", features = ["rt", "macros"] }
+sea-orm-migration = { version = "0", features = [
+  "sqlx-sqlite",
+  "runtime-tokio-native-tls",
+] }

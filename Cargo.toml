@@ -1,5 +1,5 @@
 [workspace]
-members = [".", "entity", "migration"]
+members = [".", "migration"]
 
 [package]
 name = "sktg"
@@ -8,7 +8,6 @@ edition = "2021"
 license = "AGPL-3"
 
 [dependencies]
-entity = { path = "entity" }
 migration = { path = "migration" }
 
 tokio = { version = "1.8", features = ["rt-multi-thread", "macros"] }
