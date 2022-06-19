@@ -4,11 +4,10 @@
 import datetime
 import os
 from pathlib import Path
-import pathlib
 
 datetime_fmt = r"%Y-%m-%dT%H-%M-%S"
 
-temp_dir = Path("temp")
+temp_dir = Path(os.getenv("TMP_DIR", "tmp"))
 temp_dir.mkdir(parents=True, exist_ok=True)
 
 
@@ -16,17 +15,16 @@ def _get_temp_file_name() -> str:
     return datetime.datetime.utcnow().isoformat().replace(":", "-").replace(".", "-")
 
 
-def get_temp_file_path() -> pathlib.Path:
+def get_temp_file_path() -> Path:
     return temp_dir / _get_temp_file_name()
 
 
-config_dir = Path("config")
-assert config_dir.is_dir(), "Config directory doesn't exist"
+database_file = Path(os.getenv("DATABASE_FILE", "sktg.sqlite3"))
+assert database_file.is_file()
 
-
-token = os.getenv("TOKEN")
+token = os.getenv("BOT_TOKEN")
 if token is None:
-    with open(config_dir / "token.txt") as f:
+    with open(os.getenv("BOT_TOKEN_FILE", "token.txt")) as f:
         token = f.read().strip()
 
 

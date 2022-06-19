@@ -5,12 +5,11 @@ venv/
 env/
 
 __pycache__/
+/target/
 
-*.db
-*.sqlite
-*.sqlite3
+/tmp/
+
+token.txt
+*.sqlite*
 
 docker-compose.override.yml
-
-/target/
-token.txt

@@ -9,15 +9,11 @@ This is the source code of my Telegram bot.
 
 ## Preparations:
 0. Clone the repo, obviously.
-1. Save your token into the `config/token.txt` file
-([here](config/token.example.txt)'s an example)
-2. You might want to put you Telegram ID (your, not your bot's)
-into the `config/admins_override.txt` file,
-because some of the bot commands are only available for admins.
-You can even put multiple IDs, if you want to.
-(Note that you have to put the ID, and not the @username.
-To find out your ID, you can use a `/tme` command
-of [this bot](https://t.me/sliva0bot), for example.)
+1. Save your token into the `token.txt` file in the root of the repo.
+2. Create a database file
+```shell
+touch sktg.sqlite3
+```
 
 ## Running:
 ### Docker:
@@ -29,30 +25,10 @@ into the container, so that you don't have to
 rebuild the image every time you make a change,
 it also increases the verbosity of logging
 and disables auto-restarts of the service.
-1. Since some local directories are mounted into the docker container,
-you probably want to make sure the `UID:GID` inside the container matches
-your `UID:GID` outside of the container.
-Otherwise you may end up with files you cannot delete without `sudo`.
-So the command you want to execute is most likely
+1. Just run
 ```shell
-DOCKER_UID=$(id -u) DOCKER_GID=$(id -g) docker-compose up
+docker-compose up
 ```
-
-This is not a Docker guide,
-so you might want to look up things like
-```shell
-docker-compose up --build
-```
-```shell
-docker-compose up --detach
-```
-```shell
-docker-compose down
-```
-```shell
-docker-compose logs
-```
-if you're not familiar with Docker yet.
 
 ### No Docker:
 0. Set up a `venv`:
@@ -68,6 +44,18 @@ pip install -r requirements.txt
 ```shell
 python3 -m sktg
 ```
+
+## P.S.
+* You can change logging verbosity by passing a `LOGLEVEL` env variable.
+Like this if you're on Linux:
+```shell
+LOGLEVEL=DEBUG python3 -m sktg
+```
+* You can change the path to the sqlite database file
+by passing a `DATABASE_FILE` env variable.
+* You can change the path to the file with your token
+by passing a `BOT_TOKEN_FILE` env variable.
+* Or you can just directly pass the token via a `BOT_TOKEN` env variable.
 
 # Contributing
 Just open a pull request or an issue!

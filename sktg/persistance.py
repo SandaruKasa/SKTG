@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 database = peewee.SqliteDatabase(
-    config.config_dir / "database.sqlite3", pragmas={"foreign_keys": 1}
+    config.database_file,
+    pragmas={"foreign_keys": 1}
 )
 
 
@@ -80,6 +81,8 @@ def add_admins_from_txt(file: pathlib.Path):
     assert file.is_file()
 
 
+# TODO: come up with a better way
+"""
 @migration(priority=100)
 def admins_override():
     override_file = config.config_dir / "admins_override.txt"
@@ -116,3 +119,4 @@ def admins_override():
         override_file.rename(
             override_file.with_suffix(f".migrated{override_file.suffix}")
         )
+"""

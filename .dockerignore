@@ -5,15 +5,19 @@ venv/
 env/
 
 __pycache__/
-target/
+/target/
 
-config/
-logs/
+/tmp/
+
+token.txt
+# *.sqlite*
 
 Dockerfile
 .dockeringore
 docker-compose*.yml
 
 .git/
-.gitignore
-.gitattributes
+.git*
+
+README*
+LICENSE*
