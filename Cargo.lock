@@ -1871,7 +1871,7 @@ dependencies = [
 
 [[package]]
 name = "sktg"
-version = "0.4.0-pre3"
+version = "0.4.0-pre4"
 dependencies = [
  "anyhow",
  "chrono",

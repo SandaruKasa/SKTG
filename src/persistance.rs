@@ -2,6 +2,8 @@ use anyhow::{Context as _, Result};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::{ConnectOptions, Database, DatabaseConnection, DbErr};
 
+pub mod entity;
+
 use crate::config::SQLITE_FILE_PATH;
 
 pub async fn connect() -> Result<DatabaseConnection, DbErr> {
