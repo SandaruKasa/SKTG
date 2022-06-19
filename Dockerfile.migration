@@ -1,4 +1,0 @@
-FROM alpine
-COPY ./config/database.sqlite3 /mnt/database/db.sqlite3
-VOLUME [ "/mnt/database" ]
-ENTRYPOINT [ "ls", "-lahF", "/mnt/database" ]

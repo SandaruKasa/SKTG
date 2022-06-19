@@ -1,17 +1,8 @@
 version: "3.9"
 services:
-  migration:
-    build:
-      context: .
-      dockerfile: Dockerfile.migration
-    volumes:
-      - database:/mnt/database
   bot:
     build: .
     container_name: sktg
-    depends_on:
-      migration:
-        condition: service_completed_successfully
     environment:
       - BOT_TOKEN_FILE=/run/secrets/token
       - DATABASE_FILE=/run/database/db.sqlite3
