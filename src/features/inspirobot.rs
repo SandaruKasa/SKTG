@@ -59,7 +59,7 @@ pub async fn inspirobot(
         .caption(format!(
             "https://{}/share?iuid={}",
             website,
-            picture_url.path().trim_start_matches("/")
+            picture_url.path().trim_start_matches('/')
         ))
         .await?;
     Ok(())
