@@ -1,6 +1,6 @@
-use teloxide::{adaptors::AutoSend, prelude::*, types::Message, utils::command::BotCommands, Bot};
+use teloxide::{prelude::*, types::Message, utils::command::BotCommands};
 
-use crate::types::Res;
+use crate::types::*;
 
 #[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "")]
@@ -15,7 +15,7 @@ pub enum MiscCommands {
 
 use MiscCommands::*;
 
-pub async fn misc(bot: AutoSend<Bot>, message: Message, command: MiscCommands) -> Res<()> {
+pub async fn misc(bot: TelegramBot, message: Message, command: MiscCommands) -> Res<()> {
     bot.send_message(
         message.chat.id,
         match command {

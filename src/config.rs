@@ -4,6 +4,7 @@ use std::{
     fs::{read_to_string, File},
     io::{BufRead, BufReader},
     path::{Path, PathBuf},
+    time,
 };
 
 use anyhow::{Context, Result};
@@ -116,4 +117,13 @@ pub async fn init_admins() -> Result<()> {
         log::info!("{path:?} doesn't exist, so not initializing admins")
     }
     Ok(())
+}
+
+lazy_static! {
+    pub static ref STARTUP_TIME: time::Instant = time::Instant::now();
+}
+
+/// Rounds to whole seconds
+pub fn get_uptime() -> time::Duration {
+    time::Duration::from_secs(STARTUP_TIME.elapsed().as_secs())
 }

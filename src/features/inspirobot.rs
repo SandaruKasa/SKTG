@@ -1,14 +1,12 @@
 use chrono::{Datelike, Utc};
 use reqwest::Url;
 use teloxide::{
-    adaptors::AutoSend,
     prelude::*,
     types::{InputFile, Message},
     utils::command::BotCommands,
-    Bot,
 };
 
-use crate::types::Res;
+use crate::types::*;
 
 #[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "")]
@@ -32,7 +30,7 @@ const XMASCARDBOT: &str = "xmascardbot.com";
 const INSPIROBOT: &str = "inspirobot.me";
 
 pub async fn inspirobot(
-    bot: AutoSend<Bot>,
+    bot: TelegramBot,
     message: Message,
     command: InspirobotCommands,
 ) -> Res<()> {

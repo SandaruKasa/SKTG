@@ -1,6 +1,8 @@
+mod admin;
 mod inspirobot;
 mod misc;
 
+pub use admin::*;
 pub use inspirobot::*;
 pub use misc::*;
 use teloxide::{types::BotCommand, utils::command::BotCommands};

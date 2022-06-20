@@ -1,4 +1,5 @@
 use anyhow::{Context as _, Result};
+use lazy_static::LazyStatic;
 use sea_orm::EntityTrait;
 use teloxide::dispatching::UpdateFilterExt;
 
@@ -53,8 +54,9 @@ async fn init() -> Result<TelegramBot> {
     log::info!("Commands are set up");
 
     let me = bot.get_me().await.context("Error getting bot info")?;
-    log::info!("Bot @{} initialized", me.username());
+    LazyStatic::initialize(&config::STARTUP_TIME);
 
+    log::info!("Bot @{} initialized", me.username());
     Ok(bot)
 }
 
@@ -72,10 +74,15 @@ async fn main() -> Result<()> {
                 .filter_command::<MiscCommands>()
                 .endpoint(misc),
         )
-        .chain(
+        .branch(
             dptree::entry()
                 .filter_command::<InspirobotCommands>()
                 .endpoint(inspirobot),
+        )
+        .branch(
+            dptree::entry()
+                .filter_command::<AdminCommands>()
+                .endpoint(admin),
         );
     log::info!("Starting the dispatcher");
     Dispatcher::builder(bot, handler)
