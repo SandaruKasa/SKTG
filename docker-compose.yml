@@ -5,13 +5,11 @@ services:
     container_name: sktg
     environment:
       - BOT_TOKEN_FILE=/run/secrets/token
-      - DATABASE_FILE=/run/database/db.sqlite3
-      - TMP_DIR=/tmp
     restart: always
     secrets:
       - token
     volumes:
-      - database:/run/database
+      - database:/var/db
 secrets:
   token:
     file: ./token.txt
