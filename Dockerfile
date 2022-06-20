@@ -18,5 +18,10 @@ RUN ["apt", "clean"]
 
 RUN ["update-ca-certificates"]
 
+ENV DATABASE_FILE=/var/db/db.sqlite3
+RUN dirname ${DATABASE_FILE} | xargs mkdir -p
+RUN touch ${DATABASE_FILE}
+VOLUME /var/db
+
 COPY --from=builder /usr/local/cargo/bin/sktg /usr/local/bin/sktg
 CMD ["sktg"]
