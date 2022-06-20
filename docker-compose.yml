@@ -2,14 +2,20 @@ version: "3.9"
 services:
   bot:
     build: .
+    configs:
+      - admins
     container_name: sktg
     environment:
       - BOT_TOKEN_FILE=/run/secrets/token
+      - BOT_ADMINS_FILE=/admins
     restart: always
     secrets:
       - token
     volumes:
       - database:/var/db
+configs:
+  admins:
+    file: ./admins.txt
 secrets:
   token:
     file: ./token.txt

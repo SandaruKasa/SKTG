@@ -1,8 +1,9 @@
 import datetime
 import logging
-import pathlib
+import os
 import typing
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable
 
 import peewee
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 database = peewee.SqliteDatabase(
     config.database_file,
-    pragmas={"foreign_keys": 1}
+    pragmas={"foreign_keys": 1},
 )
 
 
@@ -41,6 +42,7 @@ class Migration:
 migrations: list[Migration] = []
 
 
+# TODO: come up with a better way
 def migration(priority: int = 0):
     def decorator(task: Callable[[], None]):
         migrations.append(Migration(task=task, priority=priority))
@@ -66,6 +68,7 @@ def init():
             migration.task()
         logger.debug("Migrations applied")
     logger.info("Database initialized")
+    init_admins()
 
 
 @create_table
@@ -77,46 +80,19 @@ class BotAdmin(BaseModel):
         return BotAdmin.get_or_create(user_id=user_id)[1]
 
 
-def add_admins_from_txt(file: pathlib.Path):
-    assert file.is_file()
-
-
-# TODO: come up with a better way
-"""
-@migration(priority=100)
-def admins_override():
-    override_file = config.config_dir / "admins_override.txt"
-    backup_file = config.config_dir / "admins_backup.txt"
-
-    if not override_file.exists():
-        return
-
-    logger.info(f"Found {override_file}, applying...")
-
-    with database.atomic():
-        if admins := BotAdmin.select():
-            logger.info("Backing up previous admins...")
-            backed_up = 0
-            with open(backup_file, "a") as f:
-                f.write(datetime.datetime.utcnow().strftime(config.datetime_fmt))
-                f.write("\n")
-                for bot_admin in admins:
-                    f.write(f"{bot_admin.user_id}\n")
-                    bot_admin.delete_instance()
-                    backed_up += 1
-                f.write("\n")
-            logger.info(f"Backed up {backed_up} previously set admins")
-
-        admins = []
-        with open(override_file) as f:
-            for line in f:
-                if line := line.strip():
-                    admins.append(int(line))
-        logger.info(f"Found {len(admins)} entires in {override_file}")
-
-        added = list(map(BotAdmin.add, admins)).count(True)
-        logger.info(f"Added {added} new admins to the database")
-        override_file.rename(
-            override_file.with_suffix(f".migrated{override_file.suffix}")
-        )
-"""
+def init_admins():
+    path = Path(os.getenv("BOT_ADMINS_FILE", "admins.txt"))
+    if path.exists():
+        logger.info(f"Found {path}, initializing admins...")
+        with database.atomic():
+            admins = []
+            with open(path) as f:
+                for line in f:
+                    if line := line.strip():
+                        admins.append(int(line))
+            logger.info(f"Found {len(admins)} entires in {path}")
+            added = list(map(BotAdmin.add, admins)).count(True)
+            logger.info(f"Added {added} new admins to the database")
+        logger.info("Admins initialized")
+    else:
+        logger.info(f"{path} doesn't exist, so not initializing admins")

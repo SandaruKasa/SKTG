@@ -5,11 +5,11 @@ venv/
 env/
 
 __pycache__/
-/target/
 
 /tmp/
 
 token.txt
+admins.txt
 *.sqlite*
 
 Dockerfile

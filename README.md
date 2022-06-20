@@ -14,6 +14,9 @@ This is the source code of my Telegram bot.
 ```shell
 touch sktg.sqlite3
 ```
+4. You might want to make yourself an admin of the bot.
+To do that, put your Telegram id to the
+`admins.txt` file in the root of the repo.
 
 ## Running:
 ### Docker:
@@ -53,6 +56,8 @@ LOGLEVEL=DEBUG python3 -m sktg
 ```
 * You can change the path to the sqlite database file
 by passing a `DATABASE_FILE` env variable.
+* You can change the path to the file with bot admin ids
+by passing a `BOT_ADMINS_FILE` env variable.
 * You can change the path to the file with your token
 by passing a `BOT_TOKEN_FILE` env variable.
 * Or you can just directly pass the token via a `BOT_TOKEN` env variable.
