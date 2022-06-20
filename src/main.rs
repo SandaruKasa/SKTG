@@ -1,5 +1,6 @@
 use anyhow::{Context as _, Result};
-use teloxide::{dispatching::UpdateFilterExt, prelude::*};
+use sea_orm::EntityTrait;
+use teloxide::dispatching::UpdateFilterExt;
 
 mod config;
 mod features;
@@ -7,22 +8,64 @@ mod persistance;
 mod types;
 
 use features::*;
+use types::*;
 
-#[tokio::main]
-async fn main() -> Result<()> {
+async fn message_admins(bot: &TelegramBot, text: impl ToString) -> Result<()> {
+    use persistance::entity::prelude::*;
+    let text = text.to_string();
+    let db = &persistance::connect().await?;
+    for admin in BotAdmin::find()
+        .all(db)
+        .await
+        .context("Error getting admins")?
+    {
+        if let Err(e) = bot.send_message(UserId(admin.user_id as u64), &text).await {
+            log::error!(
+                "Error sending {:?} to admin {}: {:?}",
+                text,
+                admin.user_id,
+                e
+            );
+        }
+    }
+    Ok(())
+}
+
+async fn init() -> Result<TelegramBot> {
     config::init_logging();
+
     log::info!("Initializing persistance...");
     persistance::init()
         .await
         .context("Error initializing persistance")?;
+    log::info!("Persistance initialized");
+
     log::info!("Initializing bot...");
     let bot = Bot::new(config::get_token()?).auto_send();
-    log::info!("Starting {}...", bot.get_me().await.unwrap().username());
+
+    // TODO: username support
+    config::init_admins().await?;
+
     log::info!("Setting up commands...");
     bot.set_my_commands(get_commands())
         .await
-        .context("Error setting up comamnds")?;
+        .context("Error setting up commands")?;
     log::info!("Commands are set up");
+
+    let me = bot.get_me().await.context("Error getting bot info")?;
+    log::info!("Bot @{} initialized", me.username());
+
+    Ok(bot)
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let bot = init().await?;
+
+    message_admins(&bot, "Hello!")
+        .await
+        .context("Error greeting admins")?;
+
     let handler = Update::filter_message()
         .branch(
             dptree::entry()

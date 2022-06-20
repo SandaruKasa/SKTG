@@ -20,6 +20,10 @@ If you're running Ubuntu,
 ```shell
 sudo apt install libssl-dev pkg-config -y
 ```
+4. You might want to make yourself an admin of the bot.
+To do that, put your Telegram id to the
+`admins.txt` file in the root of the repo.
+
 ## Building and running:
 ### Docker:
 0. For the ease of development, you can copy the 

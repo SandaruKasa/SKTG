@@ -25,3 +25,4 @@ VOLUME /var/db
 
 COPY --from=builder /usr/local/cargo/bin/sktg /usr/local/bin/sktg
 CMD ["sktg"]
+STOPSIGNAL SIGINT
