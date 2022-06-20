@@ -19,6 +19,11 @@ logging.basicConfig(
 
 async def on_startup(dp: aiogram.dispatcher):
     await telegram.register_commands()
+    for admin in persistance.BotAdmin.select():
+        try:
+            await telegram.bot.send_message(chat_id=admin.user_id, text="Hello!")
+        except Exception as e:
+            logging.error(f"Error greeting admin {admin.user_id}: {e}")
     config.startup_time = datetime.now()
 
 
