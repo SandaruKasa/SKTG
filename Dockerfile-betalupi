@@ -1,6 +1,7 @@
-FROM python:3-slim
-RUN ["apt", "update"]
-RUN ["apt", "install", "-y", "ffmpeg"]
-RUN ["pip", "install", "requests", "pillow", "pydub"]
+FROM python:3-alpine
+ARG BUILD_DEPS="zlib-dev jpeg-dev musl-dev gcc"
+RUN apk add --no-cache ffmpeg ${BUILD_DEPS}
+RUN ["pip", "install", "--no-cache-dir", "requests", "pillow", "pydub"]
+RUN apk del ${BUILD_DEPS}
 WORKDIR /run
 CMD ["python3", "BetaLupi.py"]

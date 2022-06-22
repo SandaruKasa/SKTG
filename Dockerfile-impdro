@@ -1,4 +1,4 @@
 FROM python:3-alpine
-RUN ["pip", "install", "requests"]
+RUN ["pip", "install", "--no-cache-dir", "requests"]
 WORKDIR /run
 CMD ["python3", "ImpDro.py"]
