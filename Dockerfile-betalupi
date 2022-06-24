@@ -1,7 +1,12 @@
 FROM python:3-alpine
-ARG BUILD_DEPS="zlib-dev jpeg-dev musl-dev gcc"
-RUN apk add --no-cache ffmpeg ${BUILD_DEPS}
+
+RUN ["apk", "add", "--no-cache", "ffmpeg"]
+
+ARG PILLOW_BUILD_DEPS="zlib-dev jpeg-dev musl-dev gcc freetype-dev"
+
+RUN apk add --no-cache ${PILLOW_BUILD_DEPS}
 RUN ["pip", "install", "--no-cache-dir", "requests", "pillow", "pydub"]
-RUN apk del ${BUILD_DEPS}
+RUN apk del ${PILLOW_BUILD_DEPS}
+
 WORKDIR /run
 CMD ["python3", "BetaLupi.py"]
