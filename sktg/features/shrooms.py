@@ -4,13 +4,13 @@ https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 
 from typing import Iterable
 
-from .. import persistance
+from .. import persistence
 from ..telegram import *
 
 
-@persistance.create_table
-class ShroomSticker(persistance.BaseModel):
-    file_unique_id = persistance.TextField(unique=True, index=True)
+@persistence.create_table
+class ShroomSticker(persistence.BaseModel):
+    file_unique_id = persistence.TextField(unique=True, index=True)
 
 
 def add_sticker(file_unique_id: str) -> bool:
@@ -18,13 +18,13 @@ def add_sticker(file_unique_id: str) -> bool:
 
 
 def add_stickers(file_unique_ids: Iterable[str]) -> list[bool]:
-    with persistance.database.atomic():
+    with persistence.database.atomic():
         return list(map(add_sticker, file_unique_ids))
 
 
-@persistance.create_table
-class ShroomStickerSet(persistance.BaseModel):
-    set_name = persistance.TextField(unique=True, index=True)
+@persistence.create_table
+class ShroomStickerSet(persistence.BaseModel):
+    set_name = persistence.TextField(unique=True, index=True)
 
 
 def add_sticker_set(set_name: str) -> bool:

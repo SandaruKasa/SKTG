@@ -4,7 +4,7 @@ from typing import Generator, Union
 
 import PIL.Image
 
-from .. import config, persistance, scheduler
+from .. import config, persistence, scheduler
 from ..telegram import *
 
 CHECK_MARK = "✅"
@@ -13,13 +13,13 @@ CACHE_TTL = datetime.timedelta(days=1)
 logger = logging.getLogger(__name__)
 
 
-@persistance.create_table
-class JpegSession(persistance.BaseModel):
-    id = persistance.PrimaryKeyField()
-    chat_id = persistance.IntegerField()
-    message_id = persistance.IntegerField()
-    user_id = persistance.IntegerField()
-    timestamp = persistance.DateTimeField(default=NOW)
+@persistence.create_table
+class JpegSession(persistence.BaseModel):
+    id = persistence.PrimaryKeyField()
+    chat_id = persistence.IntegerField()
+    message_id = persistence.IntegerField()
+    user_id = persistence.IntegerField()
+    timestamp = persistence.DateTimeField(default=NOW)
 
 
 def get_session(message: types.Message) -> JpegSession | None:
@@ -29,31 +29,31 @@ def get_session(message: types.Message) -> JpegSession | None:
     )
 
 
-@persistance.create_table
-class CachedOriginal(persistance.BaseModel):
-    session = persistance.peewee.ForeignKeyField(
+@persistence.create_table
+class CachedOriginal(persistence.BaseModel):
+    session = persistence.peewee.ForeignKeyField(
         model=JpegSession, backref="originals", on_delete="CASCADE"
     )
-    width = persistance.IntegerField()
-    height = persistance.IntegerField()
-    file_id = persistance.TextField()
+    width = persistence.IntegerField()
+    height = persistence.IntegerField()
+    file_id = persistence.TextField()
 
 
-@persistance.create_table
-class CachedJpeg(persistance.BaseModel):
-    session = persistance.peewee.ForeignKeyField(
+@persistence.create_table
+class CachedJpeg(persistence.BaseModel):
+    session = persistence.peewee.ForeignKeyField(
         model=JpegSession, backref="results", on_delete="CASCADE"
     )
-    width = persistance.IntegerField()
-    height = persistance.IntegerField()
-    compression_rate = persistance.IntegerField()
-    file_id = persistance.TextField()
+    width = persistence.IntegerField()
+    height = persistence.IntegerField()
+    compression_rate = persistence.IntegerField()
+    file_id = persistence.TextField()
 
 
 @scheduler.job(interval=CACHE_TTL / 2)
 def prune_cache():
     logger.debug("Prunning jpeg cache...")
-    with persistance.database, persistance.database.atomic():
+    with persistence.database, persistence.database.atomic():
         JpegSession.delete().where(JpegSession.timestamp < NOW() - CACHE_TTL).execute()
     logger.debug("Jpeg cache prunned")
 
@@ -123,7 +123,7 @@ async def jpeg_command_handler(user_message: types.Message):
             selected_compression=0,
         ),
     )
-    with persistance.database, persistance.database.atomic():
+    with persistence.database, persistence.database.atomic():
         session = JpegSession.create(
             chat_id=bot_message.chat.id,
             message_id=bot_message.message_id,
@@ -217,7 +217,7 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
                     message.reply_markup.inline_keyboard[0]
                 )
                 selected_compression = selected
-        with persistance.database:
+        with persistence.database:
             if session := get_session(message):
                 if session.user_id != cq.from_user.id:
                     return "This button is not for you"

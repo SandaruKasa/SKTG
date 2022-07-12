@@ -7,7 +7,7 @@ from datetime import datetime
 
 import aiogram
 
-from . import config, features, persistance, scheduler, telegram
+from . import config, features, persistence, scheduler, telegram
 
 logging.basicConfig(
     handlers=[logging.StreamHandler()],
@@ -18,7 +18,7 @@ logging.basicConfig(
 
 
 async def message_admins(text: str):
-    for admin in persistance.BotAdmin.select():
+    for admin in persistence.BotAdmin.select():
         try:
             await telegram.bot.send_message(chat_id=admin.user_id, text=text)
         except Exception as e:
@@ -37,7 +37,7 @@ async def on_shutdown(dp: aiogram.dispatcher):
 
 
 logging.info("Starting...")
-persistance.init()
+persistence.init()
 scheduler.start()
 aiogram.executor.start_polling(
     dispatcher=telegram.dp,
