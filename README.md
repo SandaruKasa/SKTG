@@ -10,11 +10,7 @@ This is the source code of my Telegram bot.
 ## Preparations:
 0. Clone the repo, obviously.
 1. Save your token into the `token.txt` file in the root of the repo.
-2. Create a database file
-```shell
-touch sktg.sqlite3
-```
-4. You might want to make yourself an admin of the bot.
+2. You might want to make yourself an admin of the bot.
 To do that, put your Telegram id to the
 `admins.txt` file in the root of the repo.
 

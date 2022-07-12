@@ -20,7 +20,6 @@ def get_temp_file_path() -> Path:
 
 
 database_file = Path(os.getenv("DATABASE_FILE", "sktg.sqlite3"))
-assert database_file.is_file()
 
 token = os.getenv("BOT_TOKEN")
 if token is None:
