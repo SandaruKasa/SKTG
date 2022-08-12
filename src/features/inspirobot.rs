@@ -13,9 +13,9 @@ use crate::types::*;
 pub enum InspirobotCommands {
     #[command(description = "send an AI-generated inspirational-quote")]
     Inspire,
-    #[command()]
+    #[command(description = "off")]
     Inspirobot,
-    #[command()]
+    #[command(description = "off")]
     Xmas,
 }
 

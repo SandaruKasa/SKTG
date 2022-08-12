@@ -5,11 +5,11 @@ use crate::types::*;
 #[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "")]
 pub enum MiscCommands {
-    #[command()]
+    #[command(description = "off")]
     Shrug,
-    #[command()]
+    #[command(description = "off")]
     GitHub,
-    #[command()]
+    #[command(description = "off")]
     Source,
 }
 

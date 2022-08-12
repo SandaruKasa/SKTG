@@ -11,7 +11,7 @@ license = "AGPL-3"
 migration = { path = "migration" }
 
 tokio = { version = "1.8", features = ["rt-multi-thread", "macros"] }
-teloxide = { version = "0.9", default-features = false, features = [
+teloxide = { version = "0.10", default-features = false, features = [
   "macros",
   "auto-send",
   "ctrlc_handler",
@@ -30,6 +30,3 @@ lazy_static = "1.4"
 chrono = "0.4"
 humantime = "2.1"
 reqwest = "0.11"
-
-[patch.crates-io]
-teloxide-macros = { git = "https://github.com/SandaruKasa/teloxide-macros.git" }

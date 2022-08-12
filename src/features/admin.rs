@@ -5,7 +5,7 @@ use crate::{config, persistance, types::*};
 #[derive(BotCommands, Clone)]
 #[command(rename = "lowercase", description = "")]
 pub enum AdminCommands {
-    #[command()]
+    #[command(description = "off")]
     Uptime,
 }
 

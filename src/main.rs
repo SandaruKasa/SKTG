@@ -88,8 +88,8 @@ async fn main() -> Result<()> {
     Dispatcher::builder(bot, handler)
         .error_handler(LoggingErrorHandler::new())
         .default_handler(move |_update| async {})
+        .enable_ctrlc_handler()
         .build()
-        .setup_ctrlc_handler()
         .dispatch()
         .await;
     Ok(())
