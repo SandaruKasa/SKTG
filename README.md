@@ -65,6 +65,6 @@ Just open a pull request or an issue!
 I'll be grateful.
 
 # Other stuff to look at
-* `rust` branch: the same bot but in Rust.
+* `rust` branch: an abandoned attempt to rewrite the same bot in Rust.
 * `python-old` branch: my old Telegram bots, written in Python a long time ago (not too proud of that code).
 * `java` branch: an abandoned attempt to rewrite my old bots into Java.
