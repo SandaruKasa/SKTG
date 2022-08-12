@@ -1,5 +1,7 @@
 # What is this?
-This is the source code of my Telegram bot.
+This is and abandoned attempt to rewrite my Telegram bot into Rust.
+Python is just better for it, man.
+Especially considering I don't have tons of traffic with my bot.
 
 # Running
 ## You'll need:
