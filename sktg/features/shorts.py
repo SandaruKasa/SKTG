@@ -23,7 +23,7 @@ youtube_short_link = re.compile(r".*youtube\.com/shorts/([\w\-]{11}).*", flags=r
 youtube_short_repl = r"https://youtu.be/\1"
 
 
-@dp.message_handler(content_types=types.ContentTypes.ANY)
+@dispatcher.message_handler(content_types=types.ContentTypes.ANY)
 async def youtube_shorts(message: types.Message):
     result = []
     for link in extract_links(message):

@@ -50,9 +50,15 @@ def shroom_stickerset_filter(message: types.Message) -> bool:
 SHROOM_GIRL_FILE_ID: str | None = None
 
 
-@dp.message_handler(shroom_stickerset_filter, content_types=types.ContentTypes.STICKER)
-@dp.message_handler(shroom_sticker_filter, content_types=types.ContentTypes.STICKER)
-@dp.message_handler(shroom_emoji_filter, content_types=types.ContentTypes.STICKER)
+@dispatcher.message_handler(
+    shroom_stickerset_filter, content_types=types.ContentTypes.STICKER
+)
+@dispatcher.message_handler(
+    shroom_sticker_filter, content_types=types.ContentTypes.STICKER
+)
+@dispatcher.message_handler(
+    shroom_emoji_filter, content_types=types.ContentTypes.STICKER
+)
 @command("shroom")
 async def reply_with_shroom_girl(message: types.Message):
     global SHROOM_GIRL_FILE_ID
@@ -72,7 +78,7 @@ def replied_sticker(message: types.Message) -> types.Sticker | None:
 # todo: i18n & l10n
 
 
-@command("add_shroom", admin_only=True)
+@command("add_shroom", filters=(bot_admin_filter,))
 async def add_shroom(message: types.Message):
     if sticker := replied_sticker(message):
         if add_sticker(sticker.file_unique_id):
@@ -83,7 +89,7 @@ async def add_shroom(message: types.Message):
         return await message.reply("Reply to a shroom, lol")
 
 
-@command("add_shrooms", admin_only=True)
+@command("add_shrooms", filters=(bot_admin_filter,))
 async def add_shrooms(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:
@@ -98,7 +104,7 @@ async def add_shrooms(message: types.Message):
         return await message.reply("Reply to a shroom sticker set, lol")
 
 
-@command("add_shroomset", "add_mycelium", admin_only=True)
+@command("add_shroomset", "add_mycelium", filters=(bot_admin_filter,))
 async def add_shroomset(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:

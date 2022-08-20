@@ -245,7 +245,7 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
         pass
 
 
-@dp.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
+@dispatcher.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
 async def jpeg_callback_handler(cq: types.CallbackQuery):
     text = None
     try:

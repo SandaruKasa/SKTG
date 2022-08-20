@@ -1,4 +1,3 @@
-from .. import config
 from ..telegram import *
 
 
@@ -15,9 +14,9 @@ async def shrug(message: types.Message):
     return await message.reply(r"¯\_(ツ)_/¯")
 
 
-@command("uptime", admin_only=True)
+@command("uptime", filters=(bot_admin_filter,))
 async def uptime(message: types.Message):
-    result = config.get_uptime()
+    result = get_uptime()
     if result is None:
         result = "Unknown"
     else:

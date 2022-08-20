@@ -1,4 +1,3 @@
-import datetime
 import logging
 import os
 import typing
@@ -14,10 +13,7 @@ from . import config
 logger = logging.getLogger(__name__)
 
 
-database = peewee.SqliteDatabase(
-    config.database_file,
-    pragmas={"foreign_keys": 1},
-)
+database = config.get_database()
 
 
 class BaseModel(peewee.Model):
