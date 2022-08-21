@@ -1,23 +1,30 @@
 version: "3.9"
+
 services:
-  bot:
-    build: .
-    configs:
-      - admins
-    container_name: sktg
+
+  junior:
+    build:
+      target: junior
+    container_name: sktg-junior
+
+    configs: [ admins ]
+    secrets: [ token-junior ]
+
     environment:
-      - BOT_TOKEN_FILE=/run/secrets/token
       - BOT_ADMINS_FILE=/admins
+      - BOT_TOKEN_FILE=/run/secrets/token-junior
+
     restart: always
-    secrets:
-      - token
     volumes:
-      - database:/var/db
+      - database-junior:/var/db
+
 configs:
   admins:
     file: ./admins.txt
+
 secrets:
-  token:
-    file: ./token.txt
+  token-junior:
+    file: ./tokens/junior.txt
+
 volumes:
-  database:
+  database-junior:

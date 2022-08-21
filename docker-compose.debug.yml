@@ -1,7 +1,8 @@
 services:
   bot:
     volumes:
-      - ./sktg:/app/sktg:ro
+      - ./sktg:/usr/src/sktg:ro
+      - ./junior:/usr/src/junior:ro
     environment:
       - LOGLEVEL=DEBUG
     restart: "no"

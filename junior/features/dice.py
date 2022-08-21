@@ -1,7 +1,7 @@
 import random
 import re
 
-from ..telegram import *
+from sktg.telegram import *
 
 MIN_N = 1
 MAX_N = 100_000

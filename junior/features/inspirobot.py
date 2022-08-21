@@ -1,11 +1,10 @@
 import datetime
 
 import aiohttp
+from sktg.telegram import *
 
-from ..telegram import *
 
-
-# todo: allow user to choose xmap / inspirobot
+# todo: allow user to choose xmas / inspirobot
 @command("inspire", "inspirobot", description="AI-generated inspirational quote")
 async def inspire(message: types.Message):
     await types.ChatActions.upload_photo()

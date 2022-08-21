@@ -29,6 +29,7 @@ def command(
     description: str | None = None,
     **kwargs,
 ):
+    print(name)
     if description:  # todo: i18n & l10n
         _commands.append(types.BotCommand(name, description))
     return dispatcher.message_handler(*filters, commands=[name, *aliases], **kwargs)
@@ -46,22 +47,35 @@ async def message_admins(text: str):
             logging.error(f"Error sending {text!r} to admin {admin.user_id}: {e}")
 
 
-startup_time: None | datetime.datetime = None
+def add_basic_commands():
+    @command("source", "opensource", "github")
+    async def github_link(message: types.Message):
+        return await message.reply(
+            "https://github.com/SandaruKasa/SKTG/tree/python",
+            disable_web_page_preview=True,
+        )
 
+    @command("shrug")
+    async def shrug(message: types.Message):
+        return await message.reply(r"¯\_(ツ)_/¯")
 
-def get_uptime() -> datetime.timedelta | None:
-    if startup_time is not None:
-        return datetime.datetime.now() - startup_time
-    else:
-        return None
+    @command("uptime", filters=(bot_admin_filter,))
+    async def uptime(message: types.Message):
+        result = config.get_uptime()
+        if result is None:
+            result = "Unknown"
+        else:
+            # stripping microseconds
+            result = str(result).split(".")[0]
+        return await message.reply(text=result)
 
 
 def start_polling() -> NoReturn:
     async def on_startup(dp: aiogram.dispatcher):
+        add_basic_commands()
         await register_commands()
         await message_admins("Hello!")
-        global startup_time
-        startup_time = datetime.datetime.now()
+        config.startup_time = datetime.datetime.now()
 
     async def on_shutdown(dp: aiogram.dispatcher):
         logging.info("Stopping...")

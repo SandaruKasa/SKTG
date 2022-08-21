@@ -1,7 +1,7 @@
 import re
 from typing import Generator
 
-from ..telegram import *
+from sktg.telegram import *
 
 
 def extract_links(message: types.Message) -> Generator[str, None, None]:

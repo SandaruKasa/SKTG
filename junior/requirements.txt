@@ -1,0 +1,16 @@
+# for sktg.persistence
+peewee==3.14
+
+# for sktg.telegram
+aiogram==2.20
+# + those for persistence
+
+# for sktg.scheduler
+timeloop==1.0.2
+
+
+# for inspirobot
+aiohttp==3.8
+
+# for jpeg
+pillow==9.1

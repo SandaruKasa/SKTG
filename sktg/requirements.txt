@@ -1,0 +1,9 @@
+# for persistence
+peewee==3.14
+
+# for telegram
+aiogram==2.20
+# + those for persistence
+
+# for scheduler
+timeloop==1.0.2
