@@ -1,8 +1,9 @@
 services:
-  bot:
+  junior:
     volumes:
       - ./sktg:/usr/src/sktg:ro
       - ./junior:/usr/src/junior:ro
     environment:
       - LOGLEVEL=DEBUG
     restart: "no"
+    tty: true
