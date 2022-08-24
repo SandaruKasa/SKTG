@@ -10,8 +10,6 @@ MAX_D = 100_000
 
 random.seed()
 
-# todo: i18n
-
 
 @dispatcher.message_handler(filters.RegexpCommandsFilter(["(\d*)d(\d+)"]))
 async def dice(message: types.Message, regexp_command: re.Match):
@@ -19,11 +17,19 @@ async def dice(message: types.Message, regexp_command: re.Match):
     n = int(n or "1")
     d = int(d)
     if n < MIN_N:
-        return await message.reply(f"Number of dice is too small. Minimum is {MIN_N}.")
+        return await message.reply(
+            gettext("The number of dice is too small. Minimum is {}.").format(MIN_N)
+        )
     if n > MAX_N:
-        return await message.reply(f"Number of dice is too big. Maximum is {MAX_N}.")
+        return await message.reply(
+            gettext("The number of dice is too big. Maximum is {}").format(MAX_N)
+        )
     if d < MIN_D:
-        return await message.reply(f"Number of sides is too small. Minimum is {MIN_D}.")
+        return await message.reply(
+            gettext("The number of sides is too small. Minimum is {}").format(MIN_D)
+        )
     if d > MAX_D:
-        return await message.reply(f"Number of sides is too big. Maximum is {MAX_D}.")
+        return await message.reply(
+            gettext("The number of sides is too big. Maximum is {}").format(MAX_D)
+        )
     return await message.reply(sum(random.randint(1, d) for _ in range(n)))

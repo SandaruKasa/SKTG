@@ -1,3 +1,19 @@
+#: features/dice.py:21
+msgid "The number of dice is too small. Minimum is {}."
+msgstr "Слишком мало костей. Допустимый минимум: {}."
+
+#: features/dice.py:25
+msgid "The number of dice is too big. Maximum is {}"
+msgstr "Слишком много костей. Допустимый максимум: {}."
+
+#: features/dice.py:29
+msgid "The number of sides is too small. Minimum is {}"
+msgstr "Слишком мало граней. Допустимый минимум: {}."
+
+#: features/dice.py:33
+msgid "The number of sides is too big. Maximum is {}"
+msgstr "Слишком много граней. Допустимый максимум: {}."
+
 #: features/jpeg.py:115
 msgid "Reply with this command to a photo you want to compress"
 msgstr "Ответь этой командой на фото, которое хочешь сшакалить"
@@ -42,4 +58,20 @@ msgstr[2] ""
 "Ненавижу YouTube Shorts.\n"
 "Держи эти видео в нормальном формате:\n"
 "{}"
+
+#: features/shrooms.py:79 features/shrooms.py:91
+msgid "Already added"
+msgstr "Уже добавлено!"
+
+#: features/shrooms.py:81
+msgid "Reply to a shroom, lol"
+msgstr "Ответь на гриб, лол"
+
+#: features/shrooms.py:93
+msgid "It's a standalone sticker"
+msgstr "Это стикер без стикерпака"
+
+#: features/shrooms.py:95
+msgid "Reply to a shroom sticker set, lol"
+msgstr "Ответь на стикерпак с грибами, лол"
 

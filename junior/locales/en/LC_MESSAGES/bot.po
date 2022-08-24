@@ -1,3 +1,19 @@
+#: features/dice.py:21
+msgid "The number of dice is too small. Minimum is {}."
+msgstr "The number of dice is too small. Minimum is {}."
+
+#: features/dice.py:25
+msgid "The number of dice is too big. Maximum is {}"
+msgstr "The number of dice is too big. Maximum is {}"
+
+#: features/dice.py:29
+msgid "The number of sides is too small. Minimum is {}"
+msgstr "The number of sides is too small. Minimum is {}"
+
+#: features/dice.py:33
+msgid "The number of sides is too big. Maximum is {}"
+msgstr "The number of sides is too big. Maximum is {}"
+
 #: features/jpeg.py:115
 msgid "Reply with this command to a photo you want to compress"
 msgstr "Reply with this command to a photo you want to compress"
@@ -37,4 +53,20 @@ msgstr[1] ""
 "Sorry, I hate YouTube Shorts.\n"
 "Here are the videos in the normal format:\n"
 "{}"
+
+#: features/shrooms.py:79 features/shrooms.py:91
+msgid "Already added"
+msgstr "Already added"
+
+#: features/shrooms.py:81
+msgid "Reply to a shroom, lol"
+msgstr "Reply to a shroom, lol"
+
+#: features/shrooms.py:93
+msgid "It's a standalone sticker"
+msgstr "It's a standalone sticker"
+
+#: features/shrooms.py:95
+msgid "Reply to a shroom sticker set, lol"
+msgstr "Reply to a shroom sticker set, lol"
 

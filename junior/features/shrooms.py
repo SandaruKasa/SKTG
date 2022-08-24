@@ -17,11 +17,6 @@ def add_sticker(file_unique_id: str) -> bool:
     return ShroomSticker.get_or_create(file_unique_id=file_unique_id)[1]
 
 
-def add_stickers(file_unique_ids: Iterable[str]) -> list[bool]:
-    with persistence.database.atomic():
-        return list(map(add_sticker, file_unique_ids))
-
-
 @persistence.create_table
 class ShroomStickerSet(persistence.BaseModel):
     set_name = persistence.TextField(unique=True, index=True)
@@ -75,33 +70,15 @@ def replied_sticker(message: types.Message) -> types.Sticker | None:
     return None
 
 
-# todo: i18n & l10n
-
-
 @command("add_shroom", filters=(bot_admin_filter,))
 async def add_shroom(message: types.Message):
     if sticker := replied_sticker(message):
         if add_sticker(sticker.file_unique_id):
             return await reply_with_shroom_girl(message)
         else:
-            return await message.reply("Already added")
+            return await message.reply(gettext("Already added"))
     else:
-        return await message.reply("Reply to a shroom, lol")
-
-
-@command("add_shrooms", filters=(bot_admin_filter,))
-async def add_shrooms(message: types.Message):
-    if sticker := replied_sticker(message):
-        if sticker.set_name:
-            shroom_set = await bot.get_sticker_set(name=sticker.set_name)
-            shrooms = tuple(file.file_unique_id for file in shroom_set.stickers)
-        else:
-            shrooms = [sticker.file_unique_id]
-        result = add_stickers(shrooms)
-        message = await reply_with_shroom_girl(message)
-        return await message.reply(f"{result.count(True)} new shrooms added")
-    else:
-        return await message.reply("Reply to a shroom sticker set, lol")
+        return await message.reply(gettext("Reply to a shroom, lol"))
 
 
 @command("add_shroomset", "add_mycelium", filters=(bot_admin_filter,))
@@ -111,8 +88,8 @@ async def add_shroomset(message: types.Message):
             if add_sticker_set(sticker.set_name):
                 return await reply_with_shroom_girl(message)
             else:
-                return await message.reply("Already added")
+                return await message.reply(gettext("Already added"))
         else:
-            return await message.reply("It's standalone sticker")
+            return await message.reply(gettext("It's a standalone sticker"))
     else:
-        return await message.reply("Reply to a shroom sticker set, lol")
+        return await message.reply(gettext("Reply to a shroom sticker set, lol"))
