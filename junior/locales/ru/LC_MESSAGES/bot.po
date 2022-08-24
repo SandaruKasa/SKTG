@@ -1,0 +1,45 @@
+#: features/jpeg.py:115
+msgid "Reply with this command to a photo you want to compress"
+msgstr "Ответь этой командой на фото, которое хочешь сшакалить"
+
+#: features/jpeg.py:224
+msgid "Sorry, this button is not for you"
+msgstr "Извини, кнопка не твоя!"
+
+#: features/jpeg.py:241
+msgid ""
+"Sorry, this menu is too old.\n"
+"Please, try using the /jpeg command instead."
+msgstr ""
+"Эта менюшка слишком старая.\n"
+"Воспользуйся командой /jpeg"
+
+#: features/jpeg.py:247
+msgid "Not so fast! Retry after {} second"
+msgid_plural "Not so fast! Retry after {} seconds"
+msgstr[0] "Не так быстро! Подожди {} секунду"
+msgstr[1] "Не так быстро! Подожди {} секунды"
+msgstr[2] "Не так быстро! Подожди {} секунд"
+
+#: features/shorts.py:38
+msgid ""
+"Sorry, I hate YouTube Shorts.\n"
+"Here's the video in the normal format:\n"
+"{}"
+msgid_plural ""
+"Sorry, I hate YouTube Shorts.\n"
+"Here are the videos in the normal format:\n"
+"{}"
+msgstr[0] ""
+"Ненавижу YouTube Shorts.\n"
+"Держи это видео в нормальном формате:\n"
+"{}"
+msgstr[1] ""
+"Ненавижу YouTube Shorts.\n"
+"Держи эти видео в нормальном формате:\n"
+"{}"
+msgstr[2] ""
+"Ненавижу YouTube Shorts.\n"
+"Держи эти видео в нормальном формате:\n"
+"{}"
+

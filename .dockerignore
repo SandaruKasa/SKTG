@@ -21,3 +21,5 @@ docker-compose*.yml
 
 README*
 LICENSE*
+
+*.mo

@@ -10,6 +10,8 @@ MAX_D = 100_000
 
 random.seed()
 
+# todo: i18n
+
 
 @dispatcher.message_handler(filters.RegexpCommandsFilter(["(\d*)d(\d+)"]))
 async def dice(message: types.Message, regexp_command: re.Match):

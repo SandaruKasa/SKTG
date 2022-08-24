@@ -12,3 +12,5 @@ admins.txt
 *.sqlite*
 
 docker-compose.override.yml
+
+*.mo

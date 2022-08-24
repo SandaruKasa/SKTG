@@ -32,8 +32,11 @@ async def youtube_shorts(message: types.Message):
             result.append(substituted)
     if result:
         await message.reply(
-            "Sorry, I hate YouTube Shorts.\nHere's your video in the normal format:\n"
-            + "\n".join(result),
+            ngettext(
+                "Sorry, I hate YouTube Shorts.\nHere's the video in the normal format:\n{}",
+                "Sorry, I hate YouTube Shorts.\nHere are the videos in the normal format:\n{}",
+                len(result),
+            ).format("\n".join(result)),
             disable_web_page_preview=True,
         )
     raise aiogram.dispatcher.handler.SkipHandler()  # so that it doesn't block other features

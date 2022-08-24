@@ -111,7 +111,9 @@ def keyboard(
 async def jpeg_command_handler(user_message: types.Message):
     photosizes = get_photosizes(user_message)
     if not photosizes:
-        return await user_message.reply("No photo, lol")
+        return await user_message.reply(
+            gettext("Reply with this command to a photo you want to compress")
+        )
 
     biggest_photosize = photosizes[0]
     bot_message = await user_message.reply_photo(
@@ -219,7 +221,7 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
         with persistence.database:
             if session := get_session(message):
                 if session.user_id != cq.from_user.id:
-                    return "This button is not for you"
+                    return gettext("Sorry, this button is not for you")
                 originals = sorted(
                     session.originals,
                     key=size_of_photosize,
@@ -236,10 +238,17 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
                 )
             else:
                 await message.edit_reply_markup()
-                return "This message is too old, sorry.\nTry using the /jpeg command."
+                return gettext(
+                    "Sorry, this menu is too old.\n"
+                    "Please, try using the /jpeg command instead."
+                )
 
     except aiogram.exceptions.RetryAfter as e:
-        return f"Not so fast! Retry after {e.timeout} seconds"
+        return ngettext(
+            "Not so fast! Retry after {} second",
+            "Not so fast! Retry after {} seconds",
+            e.timeout,
+        ).format(e.timeout)
     except aiogram.exceptions.MessageNotModified:
         pass
 
@@ -250,4 +259,4 @@ async def jpeg_callback_handler(cq: types.CallbackQuery):
     try:
         text = await jpeg_callback_body(cq)
     finally:
-        await cq.answer(text or "")
+        await cq.answer(text)

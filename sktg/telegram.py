@@ -1,9 +1,12 @@
 import datetime
 import logging
+
+from pathlib import Path
 from typing import Callable, Iterable, NoReturn
 
 import aiogram
 from aiogram import filters, types
+from aiogram.contrib.middlewares.i18n import I18nMiddleware
 
 from . import config, persistence
 
@@ -29,7 +32,6 @@ def command(
     description: str | None = None,
     **kwargs,
 ):
-    print(name)
     if description:  # todo: i18n & l10n
         _commands.append(types.BotCommand(name, description))
     return dispatcher.message_handler(*filters, commands=[name, *aliases], **kwargs)
@@ -68,6 +70,26 @@ def add_basic_commands():
             # stripping microseconds
             result = str(result).split(".")[0]
         return await message.reply(text=result)
+
+
+i18n: I18nMiddleware | None = None
+
+
+def gettext(message) -> str:
+    return i18n(message)
+
+
+def ngettext(msgid1: str, msgid2: str, n: int) -> str:
+    return i18n(msgid1, msgid2, n)
+
+
+def setup_i18n(
+    i18n_domain="bot", locales_dir: Path = Path("locales")
+) -> I18nMiddleware:
+    global i18n
+    i18n = I18nMiddleware(i18n_domain, locales_dir)
+    dispatcher.middleware.setup(i18n)
+    return i18n
 
 
 def start_polling() -> NoReturn:
