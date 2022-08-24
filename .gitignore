@@ -14,3 +14,4 @@ admins.txt
 docker-compose.override.yml
 
 *.mo
+*.pot
