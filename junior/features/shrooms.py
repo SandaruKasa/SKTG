@@ -4,8 +4,8 @@ https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 
 from typing import Iterable
 
-from sktg import persistence
-from sktg.telegram import *
+from util import persistence
+from util.telegram import *
 
 
 @persistence.create_table

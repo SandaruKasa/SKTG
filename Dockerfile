@@ -15,7 +15,7 @@ FROM base as junior
 COPY junior/requirements.txt requirements.txt
 RUN ["pip", "install", "--no-cache-dir", "-r", "requirements.txt"]
 
-COPY sktg sktg
+COPY util util
 COPY junior junior
 
 RUN pybabel compile -d junior/locales -D bot -f

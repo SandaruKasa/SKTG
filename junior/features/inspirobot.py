@@ -1,7 +1,7 @@
 import datetime
 
 import aiohttp
-from sktg.telegram import *
+from util.telegram import *
 
 
 # todo: allow user to choose xmas / inspirobot

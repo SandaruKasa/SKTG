@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from sktg import persistence, scheduler, telegram
+from util import persistence, scheduler, telegram
 
 if __package__:
     from . import features

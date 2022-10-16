@@ -3,8 +3,8 @@ import logging
 from typing import Generator, Union
 
 import PIL.Image
-from sktg import config, persistence, scheduler
-from sktg.telegram import *
+from util import config, persistence, scheduler
+from util.telegram import *
 
 CHECK_MARK = "✅"
 NOW = datetime.datetime.utcnow

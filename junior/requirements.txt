@@ -1,11 +1,11 @@
-# for sktg.persistence
+# for util.persistence
 peewee==3.14
 
-# for sktg.telegram
+# for util.telegram
 aiogram==2.20
 # + those for persistence
 
-# for sktg.scheduler
+# for util.scheduler
 timeloop==1.0.2
 
 
