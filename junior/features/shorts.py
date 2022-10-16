@@ -23,20 +23,30 @@ youtube_short_link = re.compile(r".*youtube\.com/shorts/([\w\-]{11}).*", flags=r
 youtube_short_repl = r"https://youtu.be/\1"
 
 
-@dispatcher.message_handler(content_types=types.ContentTypes.ANY)
-async def youtube_shorts(message: types.Message):
-    result = []
+def convert_links(message: types.Message) -> Generator[str, None, None]:
     for link in extract_links(message):
         substituted, subs = youtube_short_link.subn(youtube_short_repl, link)
         if subs != 0:
-            result.append(substituted)
+            yield substituted
+
+
+@command(
+    "shorts", "short", "fix", description="Convert YouTube Shorts into normal videos"
+)
+async def youtube_shorts(message: types.Message):
+    result = list(convert_links(message))
+    if not result and message.reply_to_message:
+        result = list(convert_links(message.reply_to_message))
+
     if result:
         await message.reply(
-            ngettext(
-                "Sorry, I hate YouTube Shorts.\nHere's the video in the normal format:\n{}",
-                "Sorry, I hate YouTube Shorts.\nHere are the videos in the normal format:\n{}",
-                len(result),
-            ).format("\n".join(result)),
+            gettext("Here you are:\n{}").format("\n".join(result)),
             disable_web_page_preview=True,
         )
-    raise aiogram.dispatcher.handler.SkipHandler()  # so that it doesn't block other features
+    else:
+        await message.reply(
+            gettext(
+                "Send this command as a reply to a message with a YouTube Shorts link "
+                "or paste the link after the command."
+            )
+        )
