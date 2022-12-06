@@ -1,12 +1,8 @@
-FROM python:3-alpine
+FROM python:3-slim
 
-RUN ["apk", "add", "--no-cache", "ffmpeg"]
-
-ARG PILLOW_BUILD_DEPS="zlib-dev jpeg-dev musl-dev gcc freetype-dev"
-
-RUN apk add --no-cache ${PILLOW_BUILD_DEPS}
-RUN ["pip", "install", "--no-cache-dir", "requests", "pillow", "pydub"]
-RUN apk del ${PILLOW_BUILD_DEPS}
+RUN apt update && apt install ffmpeg -y && apt clean
+RUN pip install --no-cache-dir wheel --upgrade pip && pip install --no-cache-dir requests pillow pydub
 
 WORKDIR /run
 CMD ["python3", "BetaLupi.py"]
+STOPSIGNAL SIGINT

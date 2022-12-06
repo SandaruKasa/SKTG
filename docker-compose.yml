@@ -5,18 +5,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-betalupi
-    logging: 
-      driver: "none"
-    volumes: [ .:/run ]
-    user: 1000:1000
-    restart: always
-  impdro:
-    container_name: impdro
-    build:
-      context: .
-      dockerfile: Dockerfile-impdro
     logging:
       driver: "none"
     volumes: [ .:/run ]
     user: 1000:1000
     restart: always
+
+  impdro:
+    container_name: impdro
+    build: impdro
+    restart: always
+
