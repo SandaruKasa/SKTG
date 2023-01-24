@@ -21,3 +21,12 @@ COPY junior junior
 RUN pybabel compile -d junior/locales -D bot -f
 
 CMD ["python3", "-m", "junior"]
+
+
+FROM python:alpine AS spinbot
+
+RUN pip install --no-cache-dir aiogram
+COPY spinbot.py ./
+
+CMD ["python3", "spinbot.py"]
+STOPSIGNAL SIGINT

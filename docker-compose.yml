@@ -18,6 +18,18 @@ services:
     volumes:
       - database-junior:/var/db
 
+  spinbot:
+    build:
+      target: spinbot
+    container_name: sktg-spinbot
+
+    secrets: [ token-spinbot ]
+
+    environment:
+      - BOT_TOKEN_FILE=/run/secrets/token-spinbot
+
+    restart: always
+
 configs:
   admins:
     file: ./admins.txt
@@ -25,6 +37,9 @@ configs:
 secrets:
   token-junior:
     file: ./tokens/junior.txt
+
+  token-spinbot:
+    file: ./tokens/spinbot.txt
 
 volumes:
   database-junior:
