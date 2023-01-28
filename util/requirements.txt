@@ -1,9 +1,9 @@
 # for persistence
-peewee==3.14
+peewee>=3.14
 
 # for telegram
-aiogram==2.20
+aiogram>=2.20
 # + those for persistence
 
 # for scheduler
-timeloop==1.0.2
+timeloop>=1.0

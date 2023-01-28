@@ -1,16 +1,16 @@
 # for util.persistence
-peewee==3.14
+peewee>=3.14
 
 # for util.telegram
-aiogram==2.20
+aiogram>=2.20
 # + those for persistence
 
 # for util.scheduler
-timeloop==1.0.2
+timeloop>=1.0.2
 
 
 # for inspirobot
-aiohttp==3.8
+aiohttp>=3.8
 
 # for jpeg
-pillow==9.1
+pillow>=9.1
