@@ -258,7 +258,7 @@ class Bot:
 
     @safeguard(5)
     def get_updates(self, offset: int = 0) -> list:
-        res = get(self.api_link + 'getUpdates', params={'offset': offset}, timeout=5).json()
+        res = get(self.api_link + 'getUpdates', params={'offset': offset, "timeout": 100}, timeout=1000).json()
         if res['ok']:
             res = res['result']
             for u in res:

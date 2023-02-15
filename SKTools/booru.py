@@ -3,19 +3,19 @@ from random import randint
 from typing import Optional, Callable
 from xml.etree.ElementTree import fromstring, Element
 
+import requests
+
 from SKTools.files import remove_file
 from SKTools.links import booru_api
-from SKTools.proxies import ProxiedRequester
 from SKTools.tg import Bot, reply_dict
 
 
 class Booru:
     def __init__(self, booru_name: str):
         self._api_link = booru_api.format(booru_name)
-        self.requester = ProxiedRequester(self._api_link)
 
     def method(self, **params) -> Element:
-        return fromstring(self.requester.get(self._api_link, params=params).text)
+        return fromstring(requests.get(self._api_link, params=params).text)
 
     def search(self, tags: str = '', limit: int = 100, pid: int = 0) -> Element:
         return self.method(page='dapi', s='post', q='index', tags=tags, limit=limit, pid=pid)
@@ -32,8 +32,7 @@ class Booru:
 
     def download_file_by_url(self, file_url: str) -> str:
         file_name = file_url.split('/')[-1]
-        while (r := self.requester.get(file_url)).encoding is not None:
-            self.requester.update_proxies()
+        requests.get(file_url)
         with open(file_name, 'wb') as file:
             file.write(r.content)
         return file_name

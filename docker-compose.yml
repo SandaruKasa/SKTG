@@ -4,7 +4,7 @@ services:
     container_name: betalupi
     build:
       context: .
-      dockerfile: Dockerfile-betalupi
+      dockerfile: betalupi.dockerfile
     logging:
       driver: "none"
     volumes: [ .:/run ]

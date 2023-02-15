@@ -32,8 +32,6 @@ help_commands = 'start', 'help', 'help_extended', 'help_tags', 'help_demotivator
 shrug_commands = 'shrug',
 mspabooru_commands = 'mspabooru', 'mspaboorudoc', 'mspadoc'
 mspabooru_count_commands = 'mspaboorucount', 'mspacount'
-safebooru_commands = 'safebooru', 'safeboorudoc', 'safedoc'
-safebooru_count_commands = 'safeboorucount', 'safecount'
 olive_commands = 'olive',
 compression_commands = 'jpeg', 'jpg', 'compress', 'compression'
 mp3_commands = 'mp3',
@@ -228,10 +226,6 @@ def process_message(upd: dict) -> None:
                 mspabooru.process_search_query_from_telegram(bot, msg, 'doc' in command)
             elif command in mspabooru_count_commands:
                 mspabooru.count_for_telegram(bot, msg)
-            elif command in safebooru_commands:
-                safebooru.process_search_query_from_telegram(bot, msg, 'doc' in command)
-            elif command in safebooru_count_commands:
-                safebooru.count_for_telegram(bot, msg)
             elif command in olive_commands:
                 olive_reposter.do(**reply, number_of_new_posts_to_check=0)
             elif command in converter_commands:  # todo: localization
@@ -273,7 +267,6 @@ if __name__ == '__main__':
     logger = Logger(bot, preaching_room_id)
     olive_reposter = Reposter(bot, olive, logger)
     mspabooru = Booru('mspabooru.com')
-    safebooru = Booru('safebooru.org')
 
     n = 0
     keep_running = True

@@ -5,4 +5,4 @@ RUN pip install --no-cache-dir wheel --upgrade pip && pip install --no-cache-dir
 
 WORKDIR /run
 CMD ["python3", "BetaLupi.py"]
-STOPSIGNAL SIGINT
+STOPSIGNAL SIGHUP
