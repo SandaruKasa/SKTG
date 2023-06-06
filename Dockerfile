@@ -23,7 +23,7 @@ RUN pybabel compile -d junior/locales -D bot -f
 CMD ["python3", "-m", "junior"]
 
 
-FROM python:alpine AS spinbot
+FROM python:3.10-alpine AS spinbot
 
 RUN pip install --no-cache-dir aiogram
 COPY spinbot.py ./
