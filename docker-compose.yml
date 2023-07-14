@@ -4,6 +4,7 @@ services:
 
   junior:
     build:
+      context: .
       target: junior
     container_name: sktg-junior
 
@@ -20,6 +21,7 @@ services:
 
   spinbot:
     build:
+      context: .
       target: spinbot
     container_name: sktg-spinbot
 
