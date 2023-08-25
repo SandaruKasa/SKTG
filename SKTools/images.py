@@ -123,11 +123,26 @@ def horizontal_merge(*images: Image, bg_color='black', align: str = 'center', in
                                 *images[2:], bg_color=bg_color, align=align, interval=interval, mode=mode)
 
 
+# Pillow 10.0 removes the deprecated `getsize` method for `ImageFont.FreeTypeFont`.
+# As a replacement they recommend using
+# ```python
+# left, top, right, bottom = font.getbbox("Hello world")
+# width, height = right - left, bottom - top
+# ```
+# https://github.com/hugovk/Pillow/pull/99/files#diff-aa52e563b22c10084fd5eb71464d011202f831331048679f5a8b42f17143f553
+# However, this exhibits completely different behavior, lmao.
+# So instead here's a simplified version of the removed implementation:
+# https://github.com/hugovk/Pillow/pull/99/files#diff-1e7ed0fef8a87b1055695d739fb65a2fb08227df84c872938244d9857aaf63cfL466-L470
+def getsize(font: ImageFont.FreeTypeFont, text: str):
+    size, offset = font.font.getsize(text, "L")
+    return size[0], size[1] + offset[1]
+
+
 def draw_line_no_wrap(text: str, font: ImageFont.FreeTypeFont, bg_color='black', text_color=(255, 255, 255),
                       mode: str = 'RGB') -> Image:
     if not text:
         text = ' '
-    text_img = Image.new(mode, font.getsize(text), bg_color)
+    text_img = Image.new(mode, getsize(font, text), bg_color)
     text_draw = ImageDraw.Draw(text_img)
     text_draw.text((0, 0), text, text_color, font=font)
     return text_img
@@ -140,7 +155,7 @@ def draw_line_with_wrap(text: str, font: ImageFont.FreeTypeFont, max_width: int 
         return draw_line_no_wrap(text, font, bg_color, text_color, mode=mode)
 
     def fits(test_line: str) -> bool:
-        return font.getsize(test_line)[0] <= max_width
+        return getsize(font, test_line)[0] <= max_width
 
     def carried_over(line_to_carry_over: str) -> str:
         return f'{line_to_carry_over}{"" if line_to_carry_over.endswith(carry_over_symbol) else carry_over_symbol}'
