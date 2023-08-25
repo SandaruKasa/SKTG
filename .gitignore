@@ -1,0 +1,9 @@
+/venv/
+__pycache__/
+bot_*_cache/
+database/
+logs/
+queue/
+user_activity_counter/
+vk/
+tokens.py
