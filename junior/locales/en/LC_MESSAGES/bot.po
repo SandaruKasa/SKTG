@@ -4,7 +4,7 @@ msgstr "The number of dice is too small. Minimum is {}."
 
 #: features/dice.py:25
 msgid "The number of dice is too big. Maximum is {}"
-msgstr "The number of dice is too big. Maximum is {}"
+msgstr "The number of dice is too big. Maximum is {:,}"
 
 #: features/dice.py:29
 msgid "The number of sides is too small. Minimum is {}"
@@ -12,7 +12,7 @@ msgstr "The number of sides is too small. Minimum is {}"
 
 #: features/dice.py:33
 msgid "The number of sides is too big. Maximum is {}"
-msgstr "The number of sides is too big. Maximum is {}"
+msgstr "The number of sides is too big. Maximum is {:,}"
 
 #: features/jpeg.py:115
 msgid "Reply with this command to a photo you want to compress"
@@ -67,21 +67,3 @@ msgstr "It's a standalone sticker"
 #: features/shrooms.py:95
 msgid "Reply to a shroom sticker set, lol"
 msgstr "Reply to a shroom sticker set, lol"
-
-#~ msgid ""
-#~ "Sorry, I hate YouTube Shorts.\n"
-#~ "Here's the video in the normal format:\n"
-#~ "{}"
-#~ msgid_plural ""
-#~ "Sorry, I hate YouTube Shorts.\n"
-#~ "Here are the videos in the normal format:\n"
-#~ "{}"
-#~ msgstr[0] ""
-#~ "Sorry, I hate YouTube Shorts.\n"
-#~ "Here's the video in the normal format:\n"
-#~ "{}"
-#~ msgstr[1] ""
-#~ "Sorry, I hate YouTube Shorts.\n"
-#~ "Here are the videos in the normal format:\n"
-#~ "{}"
-

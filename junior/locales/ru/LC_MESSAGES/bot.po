@@ -4,7 +4,7 @@ msgstr "Слишком мало костей. Допустимый миниму�
 
 #: features/dice.py:25
 msgid "The number of dice is too big. Maximum is {}"
-msgstr "Слишком много костей. Допустимый максимум: {}."
+msgstr "Слишком много костей. Допустимый максимум: {:'}."
 
 #: features/dice.py:29
 msgid "The number of sides is too small. Minimum is {}"
@@ -12,7 +12,7 @@ msgstr "Слишком мало граней. Допустимый миниму�
 
 #: features/dice.py:33
 msgid "The number of sides is too big. Maximum is {}"
-msgstr "Слишком много граней. Допустимый максимум: {}."
+msgstr "Слишком много граней. Допустимый максимум: {:'}."
 
 #: features/jpeg.py:115
 msgid "Reply with this command to a photo you want to compress"

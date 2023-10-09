@@ -5,8 +5,8 @@ from util.telegram import *
 
 MIN_N = 1
 MAX_N = 100_000
-MIN_D = 2
-MAX_D = 100_000
+MIN_D = 1
+MAX_D = 1_000_000_000
 
 random.seed()
 
