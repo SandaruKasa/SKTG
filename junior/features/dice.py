@@ -11,7 +11,7 @@ MAX_D = 100_000
 random.seed()
 
 
-@dispatcher.message_handler(filters.RegexpCommandsFilter(["(\d*)d(\d+)"]))
+@dispatcher.message_handler(filters.RegexpCommandsFilter(["^/(\d*)d(\d+)$"]))
 async def dice(message: types.Message, regexp_command: re.Match):
     n, d = regexp_command.groups()
     n = int(n or "1")
