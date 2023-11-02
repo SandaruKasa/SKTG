@@ -1,5 +1,7 @@
 FROM python:3.11-alpine
 
+WORKDIR /run
+
 COPY requirements.txt .
 RUN ["pip", "install", "--no-cache-dir", "wheel", "-r", "requirements.txt"]
 COPY spinbot.py .

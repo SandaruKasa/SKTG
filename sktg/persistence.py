@@ -13,7 +13,10 @@ from . import config
 logger = logging.getLogger(__name__)
 
 
-database = config.get_database()
+database = peewee.SqliteDatabase(
+    config.get_database_path(),
+    pragmas={"foreign_keys": 1},
+)
 
 
 class BaseModel(peewee.Model):

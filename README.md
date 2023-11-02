@@ -1,3 +1,7 @@
+<!-- FIXME: outdated -->
+
+# This README is outdated, sorry
+
 # What is this?
 This is the source code of my Telegram bot.
 

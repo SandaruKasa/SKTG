@@ -1,7 +1,7 @@
 import random
 import re
 
-from ..telegram import *
+from sktg.telegram import *
 
 ROUTER = Router(name="dice")
 

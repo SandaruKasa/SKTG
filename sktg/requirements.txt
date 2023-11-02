@@ -1,0 +1,6 @@
+# For Telegram
+aiogram         ~= 3.1
+aiogram[i18n]
+
+# For persistence (SQL ORM)
+peewee          ~= 3.14

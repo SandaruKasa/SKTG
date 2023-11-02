@@ -1,0 +1,10 @@
+# sktg
+
+# For scheduler
+timeloop        ~= 1.0
+
+# For features.inspirobot
+aiohttp         ~= 3.8
+
+# For features.jpeg
+pillow          >=9, <11

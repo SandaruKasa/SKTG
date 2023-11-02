@@ -4,8 +4,8 @@ https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 
 from typing import Iterable
 
-from .. import persistence
-from ..telegram import *
+from sktg import persistence
+from sktg.telegram import *
 
 ROUTER = Router(name="shrooms")
 

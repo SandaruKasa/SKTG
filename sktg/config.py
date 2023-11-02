@@ -5,8 +5,6 @@ import datetime
 import os
 from pathlib import Path
 
-import peewee
-
 TEMP_DIR = Path(os.getenv("TMP_DIR", "tmp"))
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -19,11 +17,15 @@ def get_temp_file_path() -> Path:
     return TEMP_DIR / _get_temp_file_name()
 
 
-def get_database() -> peewee.Database:
-    return peewee.SqliteDatabase(
-        Path(os.getenv("DATABASE_FILE", "sktg.sqlite3")),
-        pragmas={"foreign_keys": 1},
-    )
+def get_database_path() -> Path:
+    return Path(os.getenv("DATABASE_FILE", "sktg.sqlite3"))
+
+
+def get_locale_path() -> str | Path:
+    if path := os.getenv("LOCALE_PATH"):
+        return path
+    path = Path("locale")
+    return path if path.exists() else "/usr/share/locale/"
 
 
 def get_token() -> str:

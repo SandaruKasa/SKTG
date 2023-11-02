@@ -4,8 +4,10 @@ from typing import Generator, Union
 
 import PIL.Image
 
-from .. import config, persistence, scheduler
-from ..telegram import *
+from sktg import config, persistence
+from sktg.telegram import *
+
+from .. import scheduler
 
 ROUTER = Router(name="jpeg")
 

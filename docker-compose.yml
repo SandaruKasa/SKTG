@@ -3,7 +3,9 @@ version: "3.9"
 services:
 
   junior:
-    build: .
+    build:
+      context: .
+      target: junior
     container_name: sktg-junior
 
     configs: [ admins ]

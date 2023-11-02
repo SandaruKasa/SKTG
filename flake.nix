@@ -49,7 +49,12 @@
 
           devShells.default = pkgs.mkShellNoCC {
             inherit (config.pre-commit.devShell) shellHook;
-            packages = with pkgs; [ self'.packages.devPython nixfmt statix ];
+            packages = with pkgs; [
+              self'.packages.devPython
+              hadolint
+              nixfmt
+              statix
+            ];
             env = { LOGLEVEL = "DEBUG"; };
           };
 
@@ -57,8 +62,10 @@
             hooks = {
               black.enable = true;
               isort.enable = true;
+              hadolint.enable = true;
               nixfmt.enable = true;
               statix.enable = true;
+              # TODO: check locales
             };
 
             settings = { isort.profile = "black"; };

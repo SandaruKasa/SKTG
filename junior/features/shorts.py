@@ -1,7 +1,7 @@
 import re
 from typing import Generator
 
-from ..telegram import *
+from sktg.telegram import *
 
 ROUTER = Router(name="shorts")
 

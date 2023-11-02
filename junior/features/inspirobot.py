@@ -2,7 +2,7 @@ import datetime
 
 import aiohttp
 
-from ..telegram import *
+from sktg.telegram import *
 
 ROUTER = Router(name="inspirobot")
 
