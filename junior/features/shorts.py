@@ -3,7 +3,7 @@ from typing import Generator
 
 from ..telegram import *
 
-ROUTER = aiogram.Router(name="shorts")
+ROUTER = Router(name="shorts")
 
 
 def extract_links(message: types.Message) -> Generator[str, None, None]:

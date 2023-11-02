@@ -7,7 +7,7 @@ from typing import Iterable
 from .. import persistence
 from ..telegram import *
 
-ROUTER = aiogram.Router(name="shrooms")
+ROUTER = Router(name="shrooms")
 
 
 @persistence.create_table
@@ -45,14 +45,13 @@ SHROOM_GIRL_FILE_ID: str | None = None
 
 @ROUTER.message(shroom_stickerset_filter)
 @ROUTER.message(shroom_sticker_filter)
-@ROUTER.message(aiogram.F.sticker.emoji == "🍄")
+@ROUTER.message(F.sticker.emoji == "🍄")
 @ROUTER.message(filters.Command("shroom"))
 async def reply_with_shroom_girl(message: types.Message):
     global SHROOM_GIRL_FILE_ID
     if SHROOM_GIRL_FILE_ID is None:
-        SHROOM_GIRL_FILE_ID = (
-            (await bot.get_sticker_set(name="DPDvT_SandaruKasa")).stickers[98].file_id
-        )
+        sticker_set = await message.bot.get_sticker_set(name="DPDvT_SandaruKasa")
+        SHROOM_GIRL_FILE_ID = sticker_set.stickers[98].file_id
     return await message.reply_sticker(sticker=SHROOM_GIRL_FILE_ID)
 
 
@@ -62,7 +61,7 @@ def replied_sticker(message: types.Message) -> types.Sticker | None:
     return None
 
 
-@ROUTER.message(bot_admin_filter, filters.Command("add_shroom"))
+@ROUTER.message(filter_admins, filters.Command("add_shroom"))
 async def add_shroom(message: types.Message):
     if sticker := replied_sticker(message):
         if add_sticker(sticker.file_unique_id):
@@ -73,7 +72,7 @@ async def add_shroom(message: types.Message):
         return await message.reply(gettext("Reply to a shroom, lol"))
 
 
-@ROUTER.message(bot_admin_filter, filters.Command("add_shroomset", "add_mycelium"))
+@ROUTER.message(filter_admins, filters.Command("add_shroomset", "add_mycelium"))
 async def add_shroomset(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:

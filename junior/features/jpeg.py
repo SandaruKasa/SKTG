@@ -7,7 +7,7 @@ import PIL.Image
 from .. import config, persistence, scheduler
 from ..telegram import *
 
-ROUTER = aiogram.Router(name="jpeg")
+ROUTER = Router(name="jpeg")
 
 CHECK_MARK = "✅"
 NOW = datetime.datetime.utcnow
@@ -151,7 +151,7 @@ async def jpeg_command_handler(user_message: types.Message):
 
 
 async def compress(
-    bot: aiogram.Bot,
+    bot: Bot,
     session: JpegSession,
     original: CachedOriginal,
     compression_rate: int,
@@ -246,7 +246,7 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
                     "Please, try using the /jpeg command instead."
                 )
 
-    except aiogram.exceptions.TelegramRetryAfter as e:
+    except exceptions.TelegramRetryAfter as e:
         return ngettext(
             "Not so fast! Retry after {} second",
             "Not so fast! Retry after {} seconds",
@@ -254,12 +254,12 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
         ).format(e.timeout)
     # This used to be a MessageNotModified exception
     # TODO: open a PR to bring it back?
-    except aiogram.exceptions.TelegramBadRequest as e:
+    except exceptions.TelegramBadRequest as e:
         if "message is not modified" not in e.message:
             raise
 
 
-@dispatcher.callback_query(aiogram.F.data.startswith("jpeg"))
+@ROUTER.callback_query(F.data.startswith("jpeg"))
 async def jpeg_callback_handler(cq: types.CallbackQuery):
     text = None
     try:

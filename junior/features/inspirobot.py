@@ -4,7 +4,7 @@ import aiohttp
 
 from ..telegram import *
 
-ROUTER = aiogram.Router(name="inspirobot")
+ROUTER = Router(name="inspirobot")
 
 
 # TODO: allow user to choose xmas / inspirobot
