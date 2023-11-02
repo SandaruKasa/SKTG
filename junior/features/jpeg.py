@@ -3,8 +3,11 @@ import logging
 from typing import Generator, Union
 
 import PIL.Image
-from util import config, persistence, scheduler
-from util.telegram import *
+
+from .. import config, persistence, scheduler
+from ..telegram import *
+
+ROUTER = aiogram.Router(name="jpeg")
 
 CHECK_MARK = "✅"
 NOW = datetime.datetime.utcnow
@@ -95,18 +98,20 @@ def compression_rate_buttons(
 def keyboard(
     photosizes: list[PhotoSize], selected_resolution: int, selected_compression: int
 ) -> types.InlineKeyboardMarkup:
-    return (
-        types.InlineKeyboardMarkup()
-        .row(*resolution_buttons(photosizes, selected_resolution))
-        .row(*compression_rate_buttons(selected_compression))
+    return types.InlineKeyboardMarkup(
+        inline_keyboard=[
+            resolution_buttons(photosizes, selected_resolution),
+            compression_rate_buttons(selected_compression),
+        ]
     )
 
 
-@command(
-    "jpeg",
-    description="Сожми меня жпегом, братан",
-    content_types=types.ContentTypes.ANY,
-    commands_ignore_caption=False,
+@ROUTER.message(
+    create_command(
+        "jpeg",
+        description="Сожми меня жпегом, братан",
+        commands_ignore_caption=False,
+    )
 )
 async def jpeg_command_handler(user_message: types.Message):
     photosizes = get_photosizes(user_message)
@@ -160,7 +165,7 @@ async def compress(
         CachedJpeg.compression_rate == compression_rate,
     ):
         return await bot.edit_message_media(
-            media=types.InputMediaPhoto(cached.file_id),
+            media=types.InputMediaPhoto(media=cached.file_id),
             chat_id=session.chat_id,
             message_id=session.message_id,
             reply_markup=new_keyboard,
@@ -168,19 +173,18 @@ async def compress(
 
     file = config.get_temp_file_path().with_suffix(".jpg")
     try:
-        await bot.download_file_by_id(file_id=original.file_id, destination=file)
+        await bot.download(file=original.file_id, destination=file)
         PIL.Image.open(file).save(
             file,
             optimize=True,
             quality=[100, 10, 5, 1][compression_rate],
         )
-        with open(file, "rb") as f:
-            result = await bot.edit_message_media(
-                media=types.InputMediaPhoto(f),
-                chat_id=session.chat_id,
-                message_id=session.message_id,
-                reply_markup=new_keyboard,
-            )
+        result = await bot.edit_message_media(
+            media=types.InputMediaPhoto(media=types.BufferedInputFile.from_file(file)),
+            chat_id=session.chat_id,
+            message_id=session.message_id,
+            reply_markup=new_keyboard,
+        )
         CachedJpeg.create(
             session=session,
             width=original.width,
@@ -243,17 +247,20 @@ async def jpeg_callback_body(cq: types.CallbackQuery) -> str:
                     "Please, try using the /jpeg command instead."
                 )
 
-    except aiogram.exceptions.RetryAfter as e:
+    except aiogram.exceptions.TelegramRetryAfter as e:
         return ngettext(
             "Not so fast! Retry after {} second",
             "Not so fast! Retry after {} seconds",
             e.timeout,
         ).format(e.timeout)
-    except aiogram.exceptions.MessageNotModified:
-        pass
+    # This used to be a MessageNotModified exception
+    # TODO: open a PR to bring it back?
+    except aiogram.exceptions.TelegramBadRequest as e:
+        if "message is not modified" not in e.message:
+            raise
 
 
-@dispatcher.callback_query_handler(lambda cq: cq.data and cq.data.startswith("jpeg"))
+@dispatcher.callback_query(aiogram.F.data.startswith("jpeg"))
 async def jpeg_callback_handler(cq: types.CallbackQuery):
     text = None
     try:

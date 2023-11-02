@@ -4,8 +4,10 @@ https://pbs.twimg.com/media/FGiFOcKXEAY5EX_?format=jpg&name=900x900
 
 from typing import Iterable
 
-from util import persistence
-from util.telegram import *
+from .. import persistence
+from ..telegram import *
+
+ROUTER = aiogram.Router(name="shrooms")
 
 
 @persistence.create_table
@@ -26,10 +28,6 @@ def add_sticker_set(set_name: str) -> bool:
     return ShroomStickerSet.get_or_create(set_name=set_name)[1]
 
 
-def shroom_emoji_filter(message: types.Message) -> bool:
-    return message.sticker and message.sticker.emoji == "🍄"
-
-
 def shroom_sticker_filter(message: types.Message) -> bool:
     return message.sticker and ShroomSticker.select().where(
         ShroomSticker.file_unique_id == message.sticker.file_unique_id
@@ -45,16 +43,10 @@ def shroom_stickerset_filter(message: types.Message) -> bool:
 SHROOM_GIRL_FILE_ID: str | None = None
 
 
-@dispatcher.message_handler(
-    shroom_stickerset_filter, content_types=types.ContentTypes.STICKER
-)
-@dispatcher.message_handler(
-    shroom_sticker_filter, content_types=types.ContentTypes.STICKER
-)
-@dispatcher.message_handler(
-    shroom_emoji_filter, content_types=types.ContentTypes.STICKER
-)
-@command("shroom")
+@ROUTER.message(shroom_stickerset_filter)
+@ROUTER.message(shroom_sticker_filter)
+@ROUTER.message(aiogram.F.sticker.emoji == "🍄")
+@ROUTER.message(create_command("shroom"))
 async def reply_with_shroom_girl(message: types.Message):
     global SHROOM_GIRL_FILE_ID
     if SHROOM_GIRL_FILE_ID is None:
@@ -70,7 +62,7 @@ def replied_sticker(message: types.Message) -> types.Sticker | None:
     return None
 
 
-@command("add_shroom", filters=(bot_admin_filter,))
+@ROUTER.message(bot_admin_filter, create_command("add_shroom"))
 async def add_shroom(message: types.Message):
     if sticker := replied_sticker(message):
         if add_sticker(sticker.file_unique_id):
@@ -81,7 +73,7 @@ async def add_shroom(message: types.Message):
         return await message.reply(gettext("Reply to a shroom, lol"))
 
 
-@command("add_shroomset", "add_mycelium", filters=(bot_admin_filter,))
+@ROUTER.message(bot_admin_filter, create_command("add_shroomset", "add_mycelium"))
 async def add_shroomset(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:

@@ -29,40 +29,11 @@ def create_table(model: BaseModel):
     return model
 
 
-@dataclass
-class Migration:
-    task: Callable[[], None]
-    priority: int = 0
-
-
-migrations: list[Migration] = []
-
-
-# TODO: come up with a better way
-def migration(priority: int = 0):
-    def decorator(task: Callable[[], None]):
-        migrations.append(Migration(task=task, priority=priority))
-
-    assert isinstance(priority, int), (
-        "You should call migration()"
-        if isinstance(priority, typing.Callable)
-        else "priority should be an integer"
-    )
-    return decorator
-
-
 def init():
     logger.debug("Initializing the database...")
     with database:
         logger.debug(f"Creating tables for {len(models)} models...")
         database.create_tables(models)
-
-        migrations.sort(key=lambda m: m.priority)
-        n = len(migrations)
-        for (i, migration) in enumerate(migrations, start=1):
-            logger.debug(f"Running migration {i}/{n}: {migration.task.__name__}")
-            migration.task()
-        logger.debug("Migrations applied")
     logger.info("Database initialized")
     init_admins()
 

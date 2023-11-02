@@ -1,16 +1,15 @@
-# for util.persistence
-peewee~=3.14
+# For Telegram
+aiogram         ~= 3.1
+aiogram[i18n]
 
-# for util.telegram
-aiogram~=2.20
-# + those for persistence
+# For persistence (SQL ORM)
+peewee          ~= 3.14
 
-# for util.scheduler
-timeloop~=1.0.2
+# For util.scheduler
+timeloop        ~= 1.0
 
+# For features.inspirobot
+aiohttp         ~= 3.8
 
-# for inspirobot
-aiohttp~=3.8
-
-# for jpeg
-pillow~=9.1
+# For features.jpeg
+pillow          >=9, <11

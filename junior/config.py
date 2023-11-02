@@ -32,13 +32,3 @@ def get_token() -> str:
         with open(os.getenv("BOT_TOKEN_FILE", "token.txt")) as f:
             token = f.read().strip()
     return token
-
-
-startup_time: None | datetime.datetime = None
-
-
-def get_uptime() -> datetime.timedelta | None:
-    if startup_time is not None:
-        return datetime.datetime.now() - startup_time
-    else:
-        return None
