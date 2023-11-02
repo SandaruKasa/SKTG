@@ -38,9 +38,7 @@ mp3_commands = 'mp3',
 demotivator_commands = docced('demotivator', 'dem', 'd')
 quote_commands = docced('quote', 'qt', 'q')
 sticker_commands = 'resize', 'sticker'
-coordinates_commands = docced('coordinates', 'political_coordinates', 'pc', 'coord', 'pol')
-converter_commands = *compression_commands, *mp3_commands, *demotivator_commands, *quote_commands, *sticker_commands, \
-                     *coordinates_commands
+converter_commands = *compression_commands, *mp3_commands, *demotivator_commands, *quote_commands, *sticker_commands
 github_commands = 'github',
 
 
@@ -153,14 +151,6 @@ def resize_to_sticker(message: dict) -> (False, str):
     return new_file_name
 
 
-def political_coordinates(message: dict) -> (False, str):
-    if not (file_name := bot.extract_and_download_photo(message, max_doc_size=max_image_size)):
-        return False
-    pc = Image.open('pc.png')
-    # todo: overlaying
-    return file_name
-
-
 @safeguard(2, True)
 def converter(message: dict, command: str) -> RetriesLog:
     if command in quote_commands:
@@ -178,9 +168,6 @@ def converter(message: dict, command: str) -> RetriesLog:
     elif command in sticker_commands:
         media, action = 'photo', 'resize for a sticker'
         file_name = resize_to_sticker(message)
-    elif command in coordinates_commands:
-        media, action = 'photo', 'overlay political coordinates on'
-        file_name = political_coordinates(message)
     else:
         raise Exception(f'{command} should not be in converter_commands')
 
