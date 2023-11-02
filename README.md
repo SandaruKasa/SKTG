@@ -34,7 +34,7 @@ source venv/bin/activate
 ```
 1. Install the dependencies:
 ```shell
-pip install -r junior/requirements.txt
+pip install -r requirements.txt
 ```
 2. Run the code:
 ```shell

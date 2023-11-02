@@ -3,9 +3,7 @@ version: "3.9"
 services:
 
   junior:
-    build:
-      context: .
-      target: junior
+    build: .
     container_name: sktg-junior
 
     configs: [ admins ]
@@ -20,9 +18,7 @@ services:
       - database-junior:/var/db
 
   spinbot:
-    build:
-      context: .
-      target: spinbot
+    build: spinbot
     container_name: sktg-spinbot
 
     secrets: [ token-spinbot ]
