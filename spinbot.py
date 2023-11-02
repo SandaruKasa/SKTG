@@ -1,7 +1,9 @@
+import asyncio
 import logging
 import os
-import aiogram
 import re
+
+import aiogram
 
 logging.basicConfig(
     handlers=[logging.StreamHandler()],
@@ -20,14 +22,14 @@ def get_token() -> str:
 
 
 bot = aiogram.Bot(token=get_token())
-dispatcher = aiogram.Dispatcher(bot)
+dispatcher = aiogram.Dispatcher()
 
 
 PICTURE = "https://i.redd.it/09su7inm63z31.jpg"
 
 
-@dispatcher.message_handler(
-    regexp=re.compile(
+@dispatcher.message(
+    aiogram.F.text.regexp(
         pattern=r"(?<!\w)спин(?!\w)",
         flags=re.UNICODE | re.IGNORECASE,
     )
@@ -42,15 +44,4 @@ async def spin(message: aiogram.types.Message):
 
 
 if __name__ == "__main__":
-
-    async def on_startup(dp: aiogram.dispatcher):
-        pass
-
-    async def on_shutdown(dp: aiogram.dispatcher):
-        logging.info("Stopping...")
-
-    aiogram.executor.start_polling(
-        dispatcher=dispatcher,
-        on_startup=on_startup,
-        on_shutdown=on_shutdown,
-    )
+    asyncio.run(dispatcher.start_polling(bot))
