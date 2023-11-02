@@ -46,7 +46,7 @@ SHROOM_GIRL_FILE_ID: str | None = None
 @ROUTER.message(shroom_stickerset_filter)
 @ROUTER.message(shroom_sticker_filter)
 @ROUTER.message(aiogram.F.sticker.emoji == "🍄")
-@ROUTER.message(create_command("shroom"))
+@ROUTER.message(filters.Command("shroom"))
 async def reply_with_shroom_girl(message: types.Message):
     global SHROOM_GIRL_FILE_ID
     if SHROOM_GIRL_FILE_ID is None:
@@ -62,7 +62,7 @@ def replied_sticker(message: types.Message) -> types.Sticker | None:
     return None
 
 
-@ROUTER.message(bot_admin_filter, create_command("add_shroom"))
+@ROUTER.message(bot_admin_filter, filters.Command("add_shroom"))
 async def add_shroom(message: types.Message):
     if sticker := replied_sticker(message):
         if add_sticker(sticker.file_unique_id):
@@ -73,7 +73,7 @@ async def add_shroom(message: types.Message):
         return await message.reply(gettext("Reply to a shroom, lol"))
 
 
-@ROUTER.message(bot_admin_filter, create_command("add_shroomset", "add_mycelium"))
+@ROUTER.message(bot_admin_filter, filters.Command("add_shroomset", "add_mycelium"))
 async def add_shroomset(message: types.Message):
     if sticker := replied_sticker(message):
         if sticker.set_name:

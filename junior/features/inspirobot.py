@@ -10,7 +10,8 @@ ROUTER = aiogram.Router(name="inspirobot")
 # TODO: allow user to choose xmas / inspirobot
 @ROUTER.message(
     create_command(
-        "inspire", "inspirobot", description="AI-generated inspirational quote"
+        names=["inspire", "inspirobot"],
+        description="AI-generated inspirational quote",
     )
 )
 async def inspire(message: types.Message):

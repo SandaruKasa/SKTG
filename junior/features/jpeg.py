@@ -108,9 +108,8 @@ def keyboard(
 
 @ROUTER.message(
     create_command(
-        "jpeg",
+        names=["jpeg", "jpg"],
         description="Сожми меня жпегом, братан",
-        commands_ignore_caption=False,
     )
 )
 async def jpeg_command_handler(user_message: types.Message):

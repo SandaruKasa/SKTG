@@ -28,16 +28,9 @@ _commands: list[types.BotCommand] = []
 
 
 # TODO: i18n
-# TODO: only accept with description
-def create_command(
-    name: str,
-    *aliases: str,
-    description: str | None = None,
-    **kwargs,
-):
-    if description:
-        _commands.append(types.BotCommand(command=name, description=description))
-    return aiogram.filters.Command(name, *aliases)
+def create_command(names: list[str], description: str):
+    _commands.append(types.BotCommand(command=names[0], description=description))
+    return aiogram.filters.Command(*names)
 
 
 async def register_commands():
@@ -60,7 +53,7 @@ def setup_i18n(domain="bot", locales_dir: Path = Path("locales")) -> I18n:
     return i18n
 
 
-@dispatcher.message(create_command("source", "opensource", "github"))
+@dispatcher.message(filters.Command("source", "opensource", "github"))
 async def github_link(message: types.Message):
     return await message.reply(
         "https://github.com/SandaruKasa/SKTG/tree/python",
@@ -68,7 +61,7 @@ async def github_link(message: types.Message):
     )
 
 
-@dispatcher.message(create_command("shrug"))
+@dispatcher.message(filters.Command("shrug"))
 async def shrug(message: types.Message):
     return await message.reply(r"¯\_(ツ)_/¯")
 
@@ -76,7 +69,7 @@ async def shrug(message: types.Message):
 startup_time: datetime.datetime | None = None
 
 
-@dispatcher.message(create_command("uptime"), bot_admin_filter)
+@dispatcher.message(filters.Command("uptime"), bot_admin_filter)
 async def uptime(message: types.Message):
     return await message.reply(
         text="Unknown"

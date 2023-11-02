@@ -34,9 +34,7 @@ def convert_links(message: types.Message) -> Generator[str, None, None]:
 
 @ROUTER.message(
     create_command(
-        "shorts",
-        "short",
-        "fix",
+        names=["shorts", "short", "fix"],
         description="Convert YouTube Shorts into normal videos",
     )
 )
