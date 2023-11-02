@@ -15,3 +15,7 @@ docker-compose.override.yml
 
 *.mo
 *.pot
+
+# Nix
+/result
+/.pre-commit-config.yaml
