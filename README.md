@@ -34,18 +34,18 @@ source venv/bin/activate
 ```
 1. Install the dependencies:
 ```shell
-pip install -r requirements.txt
+pip install -r junior/requirements.txt
 ```
 2. Run the code:
 ```shell
-python3 -m sktg
+python3 -m junior
 ```
 
 ## P.S.
 * You can change logging verbosity by passing a `LOGLEVEL` env variable.
 Like this if you're on Linux:
 ```shell
-LOGLEVEL=DEBUG python3 -m sktg
+LOGLEVEL=DEBUG python3 -m junior
 ```
 * You can change the path to the sqlite database file
 by passing a `DATABASE_FILE` env variable.
