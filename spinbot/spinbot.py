@@ -30,7 +30,8 @@ PICTURE = "https://i.redd.it/09su7inm63z31.jpg"
 
 @dispatcher.message(
     aiogram.F.text.regexp(
-        pattern=r"(?<!\w)спин(?!\w)",
+        mode="search",
+        pattern=r"\bспин\b",
         flags=re.UNICODE | re.IGNORECASE,
     )
 )
