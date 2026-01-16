@@ -1,7 +1,10 @@
 .idea/
 .vscode/
 
+.direnv/
+
 venv/
+.venv/
 env/
 
 __pycache__/
